@@ -370,33 +370,6 @@
 </script>
 <script src="script.js"></script>
 
-    
-    const contactForm = document.getElementById("contactForm");
-    if (contactForm) {
-        contactForm.addEventListener("submit", function(e) {
-            e.preventDefault();
-
-            const templateParams = {
-                to_email: "annfritz.deluna@email.lcup.edu.ph", // Replace with your email
-                from_name: document.getElementById("name").value,
-                from_email: document.getElementById("email").value,
-                message: document.getElementById("message").value
-            };
-
-            emailjs.send("service_v7mocoa", "template_84ia51p", templateParams)
-            .then(function(response) {
-                console.log("Message sent successfully:", response);
-                alert("✅ Message sent successfully!");
-                contactForm.reset();
-            }, function(error) {
-                console.error("EmailJS Error:", error);
-                alert("❌ Failed to send message. Please try again later.\nError: " + JSON.stringify(error));
-            });
-        });
-    } else {
-        console.error("Contact form not found");
-    }
-})();
     </script>
 
 </body>
