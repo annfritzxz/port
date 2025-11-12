@@ -296,6 +296,10 @@ const initRibbons = () => {
   gl.canvas.style.left = "0"
   gl.canvas.style.width = "100%"
   gl.canvas.style.height = "100%"
+  // Allow pointer events to pass through the canvas so underlying UI remains clickable
+  gl.canvas.style.pointerEvents = "none"
+  gl.canvas.style.userSelect = "none"
+  gl.canvas.style.touchAction = "none"
   container.appendChild(gl.canvas)
 
   const scene = new Transform()
@@ -482,12 +486,15 @@ const initRibbons = () => {
 // Decay Card Effect
 const initDecayCards = () => {
   const cards = document.querySelectorAll(".decay-card")
-
+  
   cards.forEach((card) => {
     const canvas = card.querySelector(".decay-canvas")
     const img = card.querySelector(".decay-img")
 
     if (!canvas || !img) return
+
+    // Prevent the decorative decay canvas from blocking pointer events so card buttons/links remain clickable
+    canvas.style.pointerEvents = "none"
 
     const ctx = canvas.getContext("2d")
     let particles = []
@@ -623,10 +630,21 @@ const initDecayCards = () => {
   })
 }
 
-// Global Click Spark Effect
+// Click Spark Effect
 const initClickSpark = () => {
   const canvas = document.getElementById("global-click-spark-canvas")
   if (!canvas) return
+
+  // Ensure the global spark canvas doesn't intercept pointer events so the page remains interactive
+  canvas.style.position = "fixed"
+  canvas.style.top = "0"
+  canvas.style.left = "0"
+  canvas.style.width = "100%"
+  canvas.style.height = "100%"
+  canvas.style.pointerEvents = "none"
+  canvas.style.userSelect = "none"
+  canvas.style.touchAction = "none"
+  canvas.style.zIndex = "9999"
 
   const ctx = canvas.getContext("2d")
   const sparks = []
@@ -764,3 +782,66 @@ window.THREE = window.THREE || {}
 window.OGL = window.OGL || {}
 
 // Additional updates can be added here if needed
+// ==============================
+// 💌 EmailJS Contact Form
+// ==============================
+document.addEventListener("DOMContentLoaded", function () {
+  // Ensure the EmailJS SDK is loaded
+  if (!window.emailjs) {
+    console.error(
+      "EmailJS SDK not loaded. Please include: <script src=\"https://cdn.emailjs.com/sdk/3.2.0/email.min.js\"></script>"
+    );
+    return;
+  }
+
+  // Initialize EmailJS with your public key
+  emailjs.init("RBSz6aEQzzIQUv3ft"); // <-- Replace with your EmailJS Public Key
+
+  const contactForm = document.getElementById("contactForm");
+  if (contactForm) {
+    contactForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      // Basic validation
+      const nameEl = document.getElementById("name");
+      const emailEl = document.getElementById("email");
+      const messageEl = document.getElementById("message");
+      const submitBtn = contactForm.querySelector('[type="submit"]');
+
+      const name = nameEl ? nameEl.value.trim() : "";
+      const email = emailEl ? emailEl.value.trim() : "";
+      const message = messageEl ? messageEl.value.trim() : "";
+
+      if (!name || !email || !message) {
+        alert("Please fill in your name, email and message before sending.");
+        return;
+      }
+
+      if (submitBtn) submitBtn.disabled = true;
+
+      const templateParams = {
+        name: name,
+        email: email,
+        message: message,
+      };
+
+      // Pass public key as 4th argument as a fallback in case init is not effective
+      emailjs
+        .send("service_v7mocoa", "template_84ia51p", templateParams, "RBSz6aEQzzIQUv3ft")
+        .then(
+          function (response) {
+            alert("✅ Message sent successfully!");
+            contactForm.reset();
+          },
+        )
+        .catch(function (error) {
+          alert("❌ Failed to send message. Please try again later.");
+          console.error("EmailJS error:", error);
+        })
+        .finally(function () {
+          if (submitBtn) submitBtn.disabled = false;
+        });
+    });
+  }
+});
+
