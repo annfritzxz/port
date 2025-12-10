@@ -4,54 +4,190 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ann Fritz - Portfolio</title>
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        navy: '#0a192f',
-                        'light-navy': '#112240',
-                        'lightest-navy': '#233554',
-                        slate: '#8892b0',
-                        'light-slate': '#a8b2d1',
-                        'lightest-slate': '#ccd6f6',
-                        white: '#e6f1ff',
-                        green: '#64ffda',
-                        'green-tint': 'rgba(100, 255, 218, 0.1)',
-                    },
-                    fontFamily: {
-                        sans: ['"Calibre"', '"Inter"', '"San Francisco"', '"SF Pro Text"', '-apple-system', 'system-ui', 'sans-serif'],
-                        mono: ['"SF Mono"', '"Fira Code"', '"Fira Mono"', '"Roboto Mono"', 'monospace'],
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Libraries -->
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ogl@1/dist/ogl.umd.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
-        /* Custom Styles */
-        body { margin: 0; overflow-x: hidden; }
-        ::-webkit-scrollbar { width: 10px; }
-        ::-webkit-scrollbar-track { background: #0a192f; }
-        ::-webkit-scrollbar-thumb { background: #8892b0; border-radius: 5px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64ffda; }
+        /* --- API PLAYGROUND STYLES --- */
+        .terminal-window {
+            background-color: #112240;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px -10px rgba(2, 12, 27, 0.7);
+            max-width: 700px;
+            margin: 0 auto;
+            border: 1px solid #233554;
+            overflow: hidden;
+            font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+        }
+        .terminal-header {
+            background-color: #0a192f;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #233554;
+        }
+        .terminal-buttons { display: flex; gap: 8px; margin-right: 15px; }
+        .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot-red { background-color: #ff5f56; }
+        .dot-yellow { background-color: #ffbd2e; }
+        .dot-green { background-color: #27c93f; }
+        .terminal-title { color: #8892b0; font-size: 12px; margin-left: 10px; }
+        .terminal-body { padding: 25px; color: #a8b2d1; font-size: 14px; line-height: 1.6; }
+        .code-snippet { margin-bottom: 20px; }
+        .keyword { color: #c678dd; } 
+        .function { color: #e06c75; } 
+        .string { color: #98c379; }
+        .api-output-box {
+            background-color: rgba(10, 25, 47, 0.5);
+            border-left: 3px solid #64ffda;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            min-height: 60px;
+            color: #64ffda;
+            white-space: pre-wrap;
+        }
+        .run-script-btn {
+            background: transparent;
+            color: #64ffda;
+            border: 1px solid #64ffda;
+            border-radius: 4px;
+            padding: 10px 20px;
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+        .run-script-btn:hover { background-color: rgba(100, 255, 218, 0.1); }
+        .run-script-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* --- MEME WIDGET STYLES --- */
+        .meme-widget-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            pointer-events: none; /* Let clicks pass through the area around buttons */
+        }
         
-        .fade-in-section {
+        .meme-popup {
+            background-color: #112240;
+            border: 1px solid #64ffda;
+            border-radius: 8px;
+            width: 300px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 10px 30px -10px rgba(2, 12, 27, 0.7);
+            pointer-events: auto;
             opacity: 0;
             transform: translateY(20px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
         }
-        .fade-in-section.is-visible {
+        
+        .meme-popup.active {
             opacity: 1;
-            transform: none;
+            transform: translateY(0);
+            visibility: visible;
         }
 
+        .meme-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .meme-title {
+            color: #64ffda;
+            font-family: monospace;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .close-meme-btn {
+            background: none;
+            border: none;
+            color: #8892b0;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+        }
+        .close-meme-btn:hover { color: #64ffda; }
+
+        .meme-img-container {
+            background-color: #000;
+            border-radius: 4px;
+            height: 200px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .meme-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .meme-caption {
+            color: #ccd6f6;
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 12px;
+            font-family: sans-serif;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .next-meme-btn {
+            width: 100%;
+            background: transparent;
+            border: 1px solid #64ffda;
+            color: #64ffda;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+        .next-meme-btn:hover { background: rgba(100, 255, 218, 0.1); }
+        .next-meme-btn:disabled { opacity: 0.5; cursor: wait; }
+
+        .meme-trigger-btn {
+            background-color: #64ffda;
+            color: #0a192f;
+            border: none;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+            pointer-events: auto;
+            transition: transform 0.2s;
+        }
+        .meme-trigger-btn:hover { transform: scale(1.1); }
+        
         /* Loader */
-        .loader {
+        .spinner {
             border: 3px solid rgba(100,255,218,0.1);
             border-radius: 50%;
             border-top: 3px solid #64ffda;
@@ -60,632 +196,510 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .hidden { display: none !important; }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "@supabase/supabase-js": "https://aistudiocdn.com/@supabase/supabase-js@^2.87.1",
-    "react": "https://aistudiocdn.com/react@^19.2.1",
-    "react/": "https://aistudiocdn.com/react@^19.2.1/",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0"
-  }
-}
-</script>
 </head>
-<body class="bg-navy text-slate font-sans antialiased selection:bg-lightest-navy selection:text-white relative">
+<body>
+    <canvas id="global-click-spark-canvas" class="global-click-spark-canvas"></canvas>
+    <div id="ribbons-container" class="ribbons-container"></div>
     
-    <!-- Visual Effects Containers -->
-    <div id="ribbons-container" class="fixed top-0 left-0 w-full h-full pointer-events-none z-0"></div>
-    <canvas id="click-spark-canvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-[9999]"></canvas>
+    <svg style="position: absolute; width: 0; height: 0;">
+        <defs>
+            <filter id="gooey-effect">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" result="gooey" />
+                <feComposite in="SourceGraphic" in2="gooey" operator="atop"/>
+            </filter>
+        </defs>
+    </svg>
 
     <!-- Navigation -->
-    <nav class="fixed top-0 w-full bg-navy/90 backdrop-blur-md z-50 py-4 shadow-lg transition-all duration-300" id="navbar">
-        <div class="max-w-6xl mx-auto px-6 md:px-10 flex justify-between items-center">
-            <a href="#" class="text-green text-xl font-bold font-mono z-50">Ann Fritz</a>
-            
-            <!-- Desktop Menu -->
-            <ul class="hidden md:flex gap-8 items-center list-none">
-                <li><a href="#about" class="nav-link text-xs font-mono hover:text-green transition-colors"><span class="text-green mr-1">01.</span>About</a></li>
-                <li><a href="#certificate" class="nav-link text-xs font-mono hover:text-green transition-colors"><span class="text-green mr-1">02.</span>Certificate</a></li>
-                <li><a href="#projects" class="nav-link text-xs font-mono hover:text-green transition-colors"><span class="text-green mr-1">03.</span>Projects</a></li>
-                <li><a href="#achievements" class="nav-link text-xs font-mono hover:text-green transition-colors"><span class="text-green mr-1">04.</span>Achievements</a></li>
-                <li><a href="#contact" class="nav-link text-xs font-mono hover:text-green transition-colors"><span class="text-green mr-1">05.</span>Contact</a></li>
-                <li><a href="/cv.pdf" target="_blank" class="border border-green text-green px-4 py-2 rounded text-xs font-mono hover:bg-green-tint transition-colors">Resume</a></li>
-            </ul>
-
-            <!-- Mobile Hamburger -->
-            <button class="md:hidden z-50 flex flex-col gap-1.5 cursor-pointer" id="mobile-menu-btn">
-                <span class="w-8 h-0.5 bg-green transition-transform origin-right"></span>
-                <span class="w-8 h-0.5 bg-green transition-opacity"></span>
-                <span class="w-8 h-0.5 bg-green transition-transform origin-right"></span>
-            </button>
-        </div>
-        
-        <!-- Mobile Menu Overlay -->
-        <div class="fixed inset-0 bg-navy flex flex-col justify-center items-center gap-8 transform translate-x-full transition-transform duration-300 md:hidden h-screen w-screen" id="mobile-menu">
-            <a href="#about" class="mobile-link text-lg font-mono hover:text-green">01. About</a>
-            <a href="#certificate" class="mobile-link text-lg font-mono hover:text-green">02. Certificate</a>
-            <a href="#projects" class="mobile-link text-lg font-mono hover:text-green">03. Projects</a>
-            <a href="#achievements" class="mobile-link text-lg font-mono hover:text-green">04. Achievements</a>
-            <a href="#contact" class="mobile-link text-lg font-mono hover:text-green">05. Contact</a>
-            <a href="/cv.pdf" class="border border-green text-green px-8 py-3 rounded text-sm font-mono hover:bg-green-tint">Resume</a>
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="#" class="logo">Ann Fritz </a>
+            <div class="gooey-nav-wrapper">
+                <ul class="nav-menu">
+                    <li><a href="#about" class="nav-link">About</a></li>
+                    <li><a href="#certificate" class="nav-link">Certificate</a></li>
+                    <li><a href="#projects" class="nav-link">Projects</a></li>
+                    <li><a href="#playground" class="nav-link">Playground</a></li>
+                    <li><a href="#achievements" class="nav-link">Achievements</a></li>
+                    <li><a href="#contact" class="nav-link">Contact</a></li>
+                    <li><button class="cv-button" onclick="downloadCV()">Download CV</button></li>
+                </ul>
+                <span class="gooey-effect filter"></span>
+                <span class="gooey-effect text"></span>
+            </div>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="px-6 md:px-24 max-w-6xl mx-auto w-full relative z-10">
-        
-        <!-- Hero Section -->
-        <section class="min-h-screen flex flex-col justify-center items-start pt-24 fade-in-section">
-            <p class="text-green font-mono mb-5 ml-1">Hi, my name is</p>
-            <h1 class="text-4xl md:text-7xl font-bold text-lightest-slate mb-4">Ann Fritz.</h1>
-            <h2 class="text-3xl md:text-6xl font-bold text-slate mb-8">I build things for the web.</h2>
-            <p class="max-w-xl text-slate text-lg mb-12 leading-relaxed">
-                I'm a 4th year Information Technology student specializing in building user-friendly, accessible websites and applications. Currently focused on creating inclusive digital experiences.
-            </p>
-            <a href="#projects" class="border border-green text-green px-7 py-4 rounded font-mono text-sm hover:bg-green-tint transition-colors">Check out my course!</a>
-        </section>
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-container">
+            <div class="hero-content fade-in">
+                <p class="hero-greeting">Hi, my name is</p>
+                <h1 class="hero-title">Ann Fritz</h1>
+                <h2 class="hero-subtitle">BSIT 4A</h2>
+                <p class="hero-description">
+                    I'm a 4th year Student at La Consolacion University - Philippines, specializing in Information Technology.
+                    I love building user-friendly, accessible websites and applications that make a difference.
+                    <br><br>
+                </p>
+                <a href="#projects" class="hero-button">View My Work</a>
+            </div>
+            
+            <div class="hero-card-container fade-in">
+                <div class="pc-card-wrapper">
+                    <section class="pc-card">
+                        <div class="pc-inside">
+                            <div class="pc-shine"></div>
+                            <div class="pc-glare"></div>
+                            <div class="pc-content pc-avatar-content">
+                                <img class="avatar" src="me.jpeg" alt="Ann Fritz avatar" loading="lazy">
+                                <div class="pc-user-info">
+                                    <div class="pc-user-details">
+                                        <div class="pc-mini-avatar">
+                                            <img src="me2.jpg" alt="Ann Fritz mini avatar" loading="lazy">
+                                        </div>
+                                        <div class="pc-user-text">
+                                            <div class="pc-handle"></div>
+                                            <div class="pc-status"></div>
+                                        </div>
+                                    </div>
+                                    <button class="pc-contact-btn" type="button" aria-label="Contact">
+                                        Contact
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="pc-content">
+                                <div class="pc-details">
+                                    <h3></h3>
+                                    <p></p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        <!-- About Section -->
-        <section id="about" class="py-24 fade-in-section">
-            <h2 class="flex items-center text-2xl md:text-3xl font-bold text-lightest-slate mb-10">
-                <span class="text-green font-mono text-xl mr-2">01.</span> About Me
-                <span class="h-px bg-lightest-navy flex-grow ml-4 max-w-xs"></span>
+    <!-- About Section -->
+    <section class="section" id="about">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">.</span> About Me
             </h2>
-            <div class="grid md:grid-cols-3 gap-12">
-                <div class="md:col-span-2 text-slate space-y-4">
-                    <p>Hello! My name is Ann Fritz De Luna and I enjoy creating things that live on the internet. My interest in web development started back in 2020 when I decided to try editing custom Tumblr themes — turns out hacking together HTML & CSS is fun!</p>
-                    <p>Fast-forward to today, and I've had the privilege of working on various student projects and freelance gigs. My main focus these days is building accessible, inclusive products and digital experiences.</p>
+            <div class="about-content">
+                <div class="about-text">
+                    <p>
+                        Hello! I’m Ann Fritz De Luna, a passionate and driven Information Technology 
+                        student who enjoys turning creative ideas into functional and 
+                        visually appealing web experiences.
+                    </p>
+                    <p>
+                        I value effective communication, adaptability, and accountability, which help me 
+                        collaborate well in both individual and team settings. As a student leader 
+                        and active member of various organizations, I’ve honed my 
+                        leadership and technical skills while balancing academics and extracurriculars.
+                    </p>
                     <p>Here are a few technologies I've been working with recently:</p>
-                    <ul class="grid grid-cols-2 gap-2 font-mono text-sm mt-4">
-                        <li class="flex items-center before:content-['▹'] before:text-green before:mr-2">JavaScript (ES6+)</li>
-                        <li class="flex items-center before:content-['▹'] before:text-green before:mr-2">TypeScript</li>
-                        <li class="flex items-center before:content-['▹'] before:text-green before:mr-2">React</li>
-                        <li class="flex items-center before:content-['▹'] before:text-green before:mr-2">Node.js</li>
-                        <li class="flex items-center before:content-['▹'] before:text-green before:mr-2">Supabase</li>
-                        <li class="flex items-center before:content-['▹'] before:text-green before:mr-2">Tailwind CSS</li>
+                    <ul class="skills-list">
+                        <li>JavaScript </li>
+                        <li>Java</li>
+                        <li>Node.js</li>
+                        <li>TypeScript</li>
+                        <li>HTML & CSS</li>
+                        <li>Python</li>
                     </ul>
                 </div>
-                <div class="relative group max-w-xs mx-auto md:mx-0">
-                    <div class="relative w-full aspect-square rounded bg-green/20 hover:bg-transparent transition-colors duration-300">
-                         <!-- Placeholder for profile image -->
-                         <div class="absolute inset-0 bg-navy mix-blend-screen group-hover:mix-blend-normal transition-all duration-300 border-2 border-green rounded translate-x-3 translate-y-3 group-hover:translate-x-1 group-hover:translate-y-1"></div>
-                         <img src="me.jpeg" alt="Ann Fritz" class="relative z-10 rounded filter grayscale group-hover:grayscale-0 transition-all duration-300 object-cover w-full h-full" onerror="this.src='https://via.placeholder.com/300'"/>
+                <div class="about-image">
+                    <div class="image-wrapper"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Certificate Section -->
+    <section class="section" id="certificate">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">.</span> My certifications
+            </h2>
+            <div class="certificate-container">
+                <div class="certificate-tabs">
+                    <button class="tab-button active" data-tab="job1">Certificate One</button>
+                    <button class="tab-button" data-tab="job2">Certificate Two</button>
+                    <button class="tab-button" data-tab="job3">Certificate Three</button>
+                </div>
+                <br>
+                <div class="certificate-content">
+                    <div class="tab-content active" id="job1">
+                        <h3>Microsoft <span class="company">Office</span></h3>
+                        <p class="job-date">May 16, 2023</p>
+                        <ul class="job-description">
+                            <li>Microsoft Excel (Office 2019)</li>
+                            <li>Administered by: La Consolacion University Philippines</li>
+                            <li>Language: English</li>
+                            <li>Passed</li>
+                        </ul>
+                    </div>
+                    <div class="tab-content" id="job2">
+                        <h3>Microsoft <span class="company">Office</span></h3>
+                        <p class="job-date">May 12, 2025</p>
+                        <ul class="job-description">
+                            <li>Microsoft Access Expert (Office 2019)</li>
+                            <li>Administered by: La Consolacion University Philippines</li>
+                            <li>Language: English</li>
+                            <li>Passed</li>
+                        </ul>
+                    </div>
+                    <div class="tab-content" id="job3">
+                        <h3>Microsoft <span class="company">Office</span></h3>
+                        <p class="job-date">May 22, 2022</p>
+                        <ul class="job-description">
+                            <li>Microsoft Word Expert (Office 2019)</li>
+                            <li>Administered by: La Consolacion University Philippines</li>
+                            <li>Language: English</li>
+                            <li>Passed</li>
+                        </ul>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Certificates Section -->
-        <section id="certificate" class="py-24 fade-in-section max-w-3xl">
-            <h2 class="flex items-center text-2xl md:text-3xl font-bold text-lightest-slate mb-10">
-                <span class="text-green font-mono text-xl mr-2">02.</span> Where I've Learned
-                <span class="h-px bg-lightest-navy flex-grow ml-4 max-w-xs"></span>
+    <!-- Projects Section -->
+    <section class="section" id="projects">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">.</span> Things I've Built
             </h2>
-            <div class="flex flex-col md:flex-row gap-4" id="certificates-container">
-                <!-- Dynamically populated -->
-                <div class="text-center w-full py-8 text-slate font-mono">Loading certificates...</div>
-            </div>
-        </section>
-
-        <!-- Projects Section -->
-        <section id="projects" class="py-24 fade-in-section">
-            <h2 class="flex items-center text-2xl md:text-3xl font-bold text-lightest-slate mb-10">
-                <span class="text-green font-mono text-xl mr-2">03.</span> Some Things I've Built
-                <span class="h-px bg-lightest-navy flex-grow ml-4 max-w-xs"></span>
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="projects-container">
-                <!-- Dynamically populated -->
-                <div class="text-center w-full py-8 text-slate font-mono col-span-full">Loading projects...</div>
-            </div>
-        </section>
-
-        <!-- API Playground -->
-        <section id="playground" class="py-24 fade-in-section">
-             <h2 class="flex items-center text-2xl md:text-3xl font-bold text-lightest-slate mb-10">
-                <span class="text-green font-mono text-xl mr-2">04.</span> API Playground
-                <span class="h-px bg-lightest-navy flex-grow ml-4 max-w-xs"></span>
-            </h2>
-            <div class="bg-light-navy rounded-lg shadow-xl overflow-hidden max-w-2xl mx-auto border border-navy">
-                <div class="bg-[#0d1117] px-4 py-2 flex items-center border-b border-navy">
-                    <div class="flex gap-2 mr-4">
-                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+            <div class="decay-cards-grid">
+                <div class="decay-card" data-project="1">
+                    <canvas class="decay-canvas"></canvas>
+                    <img src="woww.png" alt="The Skillio" class="decay-img">
+                    <div class="decay-overlay">
+                        <h3>Job Hunting</h3>
+                        <p>Job • Hunting • Website</p>
                     </div>
-                    <span class="text-slate/60 font-mono text-xs">api_client.js — node</span>
                 </div>
-                <div class="p-6 font-mono text-sm">
-                    <div class="text-slate mb-4">
-                        <span class="text-[#c678dd]">const</span> <span class="text-[#e06c75]">getJoke</span> = <span class="text-[#c678dd]">async</span> () => {<br/>
-                        &nbsp;&nbsp;<span class="text-[#c678dd]">const</span> res = <span class="text-[#c678dd]">await</span> fetch(<span class="text-[#98c379]">'https://v2.jokeapi.dev/joke/Programming'</span>);<br/>
-                        &nbsp;&nbsp;<span class="text-[#c678dd]">return</span> <span class="text-[#c678dd]">await</span> res.json();<br/>
+                <div class="decay-card" data-project="2">
+                    <canvas class="decay-canvas"></canvas>
+                    <img src="hehe.jpg" alt="BunBelieveable" class="decay-img">
+                    <div class="decay-overlay">
+                        <h3>Point of Sale</h3>
+                        <p>Java • Netbeans • MySQL</p>
+                    </div>
+                </div>
+                <div class="decay-card" data-project="3">
+                    <canvas class="decay-canvas"></canvas>
+                    <img src="haha.png" alt="MappleWood" class="decay-img">
+                    <div class="decay-overlay">
+                        <h3>Hotel Reservation</h3>
+                        <p>Html • JavaScript • CSS</p>
+                    </div>
+                </div>
+                <div class="decay-card" data-project="4">
+                    <canvas class="decay-canvas"></canvas>
+                    <img src="make.png" alt="Make Cents" class="decay-img">
+                    <div class="decay-overlay">
+                        <h3>Financial Literacy</h3>
+                        <p>Capstone • Project</p>
+                    </div>
+                </div>
+                <div class="decay-card" data-project="5">
+                    <canvas class="decay-canvas"></canvas>
+                    <img src="skill.png" alt="Skill Up" class="decay-img">
+                    <div class="decay-overlay">
+                        <h3>Learning</h3>
+                        <p>Figma • Student • Teacher</p>
+                    </div>
+                </div>
+                <div class="decay-card" data-project="6">
+                    <canvas class="decay-canvas"></canvas>
+                    <img src="godot.png" alt="Jumper" class="decay-img">
+                    <div class="decay-overlay">
+                        <h3>Game</h3>
+                        <p>GODOT • Game • Play</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API PLAYGROUND SECTION -->
+    <section class="section" id="playground">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">.</span> API Playground
+            </h2>
+            
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-buttons">
+                        <div class="terminal-dot dot-red"></div>
+                        <div class="terminal-dot dot-yellow"></div>
+                        <div class="terminal-dot dot-green"></div>
+                    </div>
+                    <span class="terminal-title">api_client.js — node</span>
+                </div>
+                <div class="terminal-body">
+                    <div class="code-snippet">
+                        <span class="keyword">const</span> <span class="function">getJoke</span> = <span class="keyword">async</span> () => {<br/>
+                        &nbsp;&nbsp;<span class="keyword">const</span> res = <span class="keyword">await</span> fetch(<span class="string">'https://v2.jokeapi.dev/joke/Programming'</span>);<br/>
+                        &nbsp;&nbsp;<span class="keyword">return</span> <span class="keyword">await</span> res.json();<br/>
                         };
                     </div>
-                    <div class="bg-navy/50 p-4 rounded border-l-2 border-green mb-6 min-h-[80px] text-green whitespace-pre-wrap" id="api-output">// System initialized. Ready to fetch...</div>
-                    <button id="fetch-joke-btn" class="border border-green text-green px-4 py-2 rounded hover:bg-green-tint transition-colors text-xs tracking-wider">
+                    <div class="api-output-box" id="api-output">// System initialized. Ready to fetch...</div>
+                    <button id="fetch-joke-btn" class="run-script-btn">
                         RUN SCRIPT
                     </button>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Achievements -->
-        <section id="achievements" class="py-24 fade-in-section">
-            <h2 class="flex items-center text-2xl md:text-3xl font-bold text-lightest-slate mb-10">
-                <span class="text-green font-mono text-xl mr-2">05.</span> Achievements
-                <span class="h-px bg-lightest-navy flex-grow ml-4 max-w-xs"></span>
+    <!-- Achievements Section -->
+    <section class="section" id="achievements">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">.</span> Achievements
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="achievements-container">
-                 <!-- Dynamically populated -->
-                 <div class="text-center w-full py-8 text-slate font-mono col-span-full">Loading achievements...</div>
+            <div class="achievements-spotlight-grid">
+                <div class="spotlight-card" data-spotlight-color="rgba(100, 255, 218, 0.25)">
+                    <div class="achievement-card">
+                        <div class="achievement-icon">🏆</div>
+                        <h3>With Honors</h3>
+                        <p>Junior HighSchool With Honors at Saint Anne's Catholic School.</p>
+                        <span class="achievement-year">2020</span>
+                    </div>
+                </div>
+                <div class="spotlight-card" data-spotlight-color="rgba(168, 178, 209, 0.25)">
+                    <div class="achievement-card">
+                        <div class="achievement-icon">🏆</div>
+                        <h3>With Honors</h3>
+                        <p>Senior HighSchool With Honors at Saint Anne's Catholic School.</p>
+                        <span class="achievement-year">2022</span>
+                    </div>
+                </div>
+                <div class="spotlight-card" data-spotlight-color="rgba(100, 255, 218, 0.25)">
+                    <div class="achievement-card">
+                        <div class="achievement-icon">🏆</div>
+                        <h3>Dean's Lister</h3>
+                        <p>First Year Dean's Lister Awardee at La Consolacion University Philippines.</p>
+                        <span class="achievement-year">2023</span>
+                    </div>
+                </div>
+                <div class="spotlight-card" data-spotlight-color="rgba(168, 178, 209, 0.25)">
+                    <div class="achievement-card">
+                        <div class="achievement-icon">🏆</div>
+                        <h3>Dean's Lister</h3>
+                        <p>Second Year Dean's Lister Awardee at La Consolacion University Philippines.</p>
+                        <span class="achievement-year">2024</span>
+                    </div>
+                </div>
+                <div class="spotlight-card" data-spotlight-color="rgba(100, 255, 218, 0.25)">
+                    <div class="achievement-card">
+                        <div class="achievement-icon">🏆</div>
+                        <h3>Dean' Lister</h3>
+                        <p>Third Year Dean's Lister Awardee at La Consolacion University Philippines.</p>
+                        <span class="achievement-year">2025</span>
+                    </div>
+                </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Contact -->
-        <section id="contact" class="py-24 mb-24 fade-in-section text-center max-w-2xl mx-auto">
-            <p class="text-green font-mono mb-4">06. What's Next?</p>
-            <h2 class="text-4xl md:text-5xl font-bold text-lightest-slate mb-6">Get In Touch</h2>
-            <p class="text-slate text-lg mb-12">
-                I'm currently looking for new opportunities. Whether you have a question or just want to say hi, I'll try my best to get back to you!
-            </p>
-            
-            <form id="contact-form" class="text-left space-y-4 max-w-md mx-auto">
-                <div>
-                    <label for="name" class="block text-green font-mono text-sm mb-2">Name</label>
-                    <input type="text" id="name" name="name" required class="w-full bg-light-navy border border-lightest-navy rounded p-3 text-lightest-slate focus:outline-none focus:border-green transition-colors">
+    <!-- Contact Section -->
+    <section class="section contact-section" id="contact">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">.</span> Contact Me    
+            </h2>
+            <div class="contact-content">
+                <p class="contact-text">
+                    I'm currently looking for new opportunities. Whether you have a question or just want to say hi, 
+                    I'll try my best to get back to you!
+                </p>
+                <div class="contact-form-wrapper">
+                    <canvas class="click-spark-canvas"></canvas>
+                    <form class="contact-form" id="contactForm">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" name="name" required placeholder="Your Name">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required placeholder="your.email@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Your Message</label>
+                            <textarea id="message" name="message" rows="6" required placeholder="Write your message here..."></textarea>
+                        </div>
+                        <button type="submit" class="contact-submit-button">
+                            Send Message
+                        </button>
+                    </form>
                 </div>
-                <div>
-                    <label for="email" class="block text-green font-mono text-sm mb-2">Email</label>
-                    <input type="email" id="email" name="email" required class="w-full bg-light-navy border border-lightest-navy rounded p-3 text-lightest-slate focus:outline-none focus:border-green transition-colors">
-                </div>
-                <div>
-                    <label for="message" class="block text-green font-mono text-sm mb-2">Message</label>
-                    <textarea id="message" name="message" rows="4" required class="w-full bg-light-navy border border-lightest-navy rounded p-3 text-lightest-slate focus:outline-none focus:border-green transition-colors"></textarea>
-                </div>
-                <button type="submit" class="w-full border border-green text-green px-6 py-4 rounded font-mono text-sm hover:bg-green-tint transition-colors flex justify-center items-center gap-2">
-                    <span id="submit-text">Send Message</span>
-                    <div id="submit-loader" class="loader hidden"></div>
-                </button>
-            </form>
-        </section>
-
-    </main>
+            </div>
+        </div>
+    </section>
 
     <!-- Footer -->
-    <footer class="text-center py-6 text-slate font-mono text-xs hover:text-green transition-colors cursor-default">
-        <div class="flex justify-center gap-6 mb-4 md:hidden">
-            <!-- Social Icons for Mobile -->
-            <a href="#" class="hover:text-green hover:-translate-y-1 transition-all"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg></a>
-            <a href="#" class="hover:text-green hover:-translate-y-1 transition-all"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg></a>
+    <footer class="footer">
+        <div class="social-links">
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+            </a>
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1-6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+            </a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            </a>
+            <a href="https://gmail.com" aria-label="Email">
+                <svg xmlns="https://mail.google.com/mail/u/0/#inbox" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            </a>
         </div>
-        <p>Designed & Built by Ann Fritz</p>
+        <p class="footer-text">Designed & Built by Ann Fritz</p>
     </footer>
 
-    <!-- Meme Widget -->
-    <div class="fixed bottom-6 right-6 z-[9999] flex flex-col items-end pointer-events-none">
-        <div id="meme-popup" class="bg-light-navy border border-green rounded-lg p-4 shadow-2xl mb-4 w-80 transform translate-y-4 opacity-0 pointer-events-auto transition-all duration-300 hidden flex-col gap-3">
-            <div class="flex justify-between items-center pb-2 border-b border-white/10">
-                <span class="text-green font-mono text-xs font-bold">Random GIF Generator</span>
-                <button id="close-meme" class="text-slate hover:text-green">&times;</button>
+    <!-- MEME WIDGET CONTAINER -->
+    <div class="meme-widget-container">
+        <!-- Popup -->
+        <div id="meme-popup" class="meme-popup">
+            <div class="meme-header">
+                <span class="meme-title">Random GIF Generator</span>
+                <button id="close-meme" class="close-meme-btn">&times;</button>
             </div>
-            <div class="bg-black rounded overflow-hidden h-48 flex items-center justify-center relative">
-                <img id="meme-img" src="" alt="GIF" class="max-w-full max-h-full object-contain hidden">
-                <div id="meme-loader" class="loader"></div>
-                <div id="meme-error" class="text-red-400 text-xs hidden">Failed to load GIF</div>
+            
+            <div class="meme-img-container">
+                <img id="meme-img" src="" alt="GIF" class="meme-img hidden">
+                <div id="meme-loader" class="spinner"></div>
+                <div id="meme-error" class="hidden" style="color: #ff5f56; font-size: 12px;">Failed to load</div>
             </div>
-            <p id="meme-caption" class="text-xs text-lightest-slate text-center line-clamp-2"></p>
-            <button id="next-meme" class="w-full border border-green text-green py-2 rounded text-xs font-mono hover:bg-green-tint transition-colors">
+            
+            <p id="meme-caption" class="meme-caption"></p>
+            
+            <button id="next-meme" class="next-meme-btn">
                 Next GIF 🤣
             </button>
         </div>
-        <button id="meme-trigger" class="bg-green text-navy p-4 rounded-full shadow-lg hover:scale-110 transition-transform pointer-events-auto">
+        
+        <!-- Trigger Button -->
+        <button id="meme-trigger" class="meme-trigger-btn">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/></svg>
         </button>
     </div>
 
-    <!-- Application Script -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+      (function(){
+         emailjs.init({
+           publicKey: "YOUR_PUBLIC_KEY", // replace with your actual key
+         });
+      })();
+    </script>
+    <script src="script.js"></script>
+
+    <!-- Main Logic Script -->
     <script>
-        // --- 1. Supabase Initialization ---
-        const supabaseUrl = 'https://odqhaasjtcxsvusrtlmi.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kcWhhYXNqdGN4c3Z1c3J0bG1pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODcyODEsImV4cCI6MjA4MDc2MzI4MX0.6gSgYVwW-hx22ddsz477IXpHAv-nPMzFG06BoFTq9DY';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-        // --- 2. Data Fetching & Rendering ---
-        
-        async function fetchAndRender() {
-            // Projects
-            const projectsEl = document.getElementById('projects-container');
-            const { data: projects } = await supabase.from('projects').select('*');
-            
-            if (projects && projects.length > 0) {
-                projectsEl.innerHTML = projects.map(p => `
-                    <div class="group relative bg-light-navy rounded overflow-hidden shadow-xl hover:-translate-y-2 transition-transform duration-300">
-                        <div class="h-48 overflow-hidden bg-navy">
-                            <!-- Placeholder for project image using color/text if url is local/broken -->
-                            <div class="w-full h-full flex items-center justify-center bg-lightest-navy/20 text-green font-mono text-sm">
-                                ${p.img}
-                            </div>
-                        </div>
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold text-lightest-slate mb-2 group-hover:text-green transition-colors">${p.title}</h3>
-                            <p class="text-slate text-sm mb-4 font-mono">${p.tech}</p>
-                            <div class="flex gap-4 text-lightest-slate">
-                                <a href="#" class="hover:text-green"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg></a>
-                                <a href="#" class="hover:text-green"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            } else {
-                projectsEl.innerHTML = '<div class="col-span-full text-slate font-mono text-center">No projects found.</div>';
-            }
-
-            // Achievements
-            const achievementsEl = document.getElementById('achievements-container');
-            const { data: achievements } = await supabase.from('achievements').select('*');
-            
-            if (achievements && achievements.length > 0) {
-                achievementsEl.innerHTML = achievements.map(a => `
-                    <div class="bg-light-navy p-6 rounded shadow hover:shadow-lg transition-shadow border border-lightest-navy hover:border-green group">
-                        <div class="text-4xl mb-4">🏆</div>
-                        <h3 class="text-lightest-slate font-bold text-lg mb-2 group-hover:text-green transition-colors">${a.title}</h3>
-                        <p class="text-green font-mono text-xs mb-3">${a.year}</p>
-                        <p class="text-slate text-sm">${a.desc}</p>
-                    </div>
-                `).join('');
-            } else {
-                achievementsEl.innerHTML = '<div class="col-span-full text-slate font-mono text-center">No achievements found.</div>';
-            }
-
-            // Certificates
-            const certificatesEl = document.getElementById('certificates-container');
-            const { data: certificates } = await supabase.from('certificates').select('*');
-
-            if (certificates && certificates.length > 0) {
-                // Build Tab Buttons
-                const buttonsHtml = `<div class="flex md:flex-col overflow-x-auto md:overflow-visible border-b md:border-b-0 md:border-l border-lightest-navy min-w-[150px]">
-                    ${certificates.map((c, idx) => `
-                        <button class="cert-btn px-5 py-3 text-left font-mono text-xs whitespace-nowrap hover:bg-light-navy hover:text-green transition-all ${idx === 0 ? 'text-green border-l-2 border-green bg-light-navy/50' : 'text-slate border-l-2 border-transparent'}" data-id="${c.id}">
-                            ${c.sub || 'Certificate'}
-                        </button>
-                    `).join('')}
-                </div>`;
-
-                // Build Content
-                const contentHtml = `<div class="flex-1 py-4 md:py-0 md:px-4 min-h-[300px]">
-                    ${certificates.map((c, idx) => `
-                        <div class="cert-content ${idx === 0 ? 'block fade-in-section is-visible' : 'hidden'}" id="cert-${c.id}">
-                            <h3 class="text-xl font-bold text-lightest-slate mb-1">
-                                ${c.title} <span class="text-green">@ ${c.sub}</span>
-                            </h3>
-                            <p class="font-mono text-sm text-slate mb-6">${c.date}</p>
-                            <ul class="space-y-4">
-                                <li class="text-slate relative pl-6 before:content-['▹'] before:text-green before:absolute before:left-0">${c.details}</li>
-                                <li class="text-slate relative pl-6 before:content-['▹'] before:text-green before:absolute before:left-0">Successfully completed certification requirements.</li>
-                            </ul>
-                        </div>
-                    `).join('')}
-                </div>`;
-
-                certificatesEl.innerHTML = buttonsHtml + contentHtml;
-
-                // Add Event Listeners for Tabs
-                document.querySelectorAll('.cert-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        // Reset all buttons
-                        document.querySelectorAll('.cert-btn').forEach(b => {
-                            b.className = 'cert-btn px-5 py-3 text-left font-mono text-xs whitespace-nowrap hover:bg-light-navy hover:text-green transition-all text-slate border-l-2 border-transparent';
-                        });
-                        // Activate current
-                        e.target.className = 'cert-btn px-5 py-3 text-left font-mono text-xs whitespace-nowrap hover:bg-light-navy hover:text-green transition-all text-green border-l-2 border-green bg-light-navy/50';
-                        
-                        // Hide all contents
-                        document.querySelectorAll('.cert-content').forEach(c => c.classList.add('hidden'));
-                        // Show target
-                        const targetId = e.target.getAttribute('data-id');
-                        const targetContent = document.getElementById(`cert-${targetId}`);
-                        targetContent.classList.remove('hidden');
-                        targetContent.classList.add('fade-in-section', 'is-visible');
-                    });
-                });
-            }
-        }
-
-        // --- 3. Interaction Logic ---
-
-        // Contact Form
-        const contactForm = document.getElementById('contact-form');
-        contactForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = document.getElementById('submit-text');
-            const loader = document.getElementById('submit-loader');
-            
-            submitBtn.classList.add('hidden');
-            loader.classList.remove('hidden');
-
-            const formData = new FormData(contactForm);
-            const { error } = await supabase.from('messages').insert([
-                { 
-                    name: formData.get('name'), 
-                    email: formData.get('email'), 
-                    msg: formData.get('message') 
-                }
-            ]);
-
-            loader.classList.add('hidden');
-            submitBtn.classList.remove('hidden');
-
-            if (error) {
-                alert('Failed to send message.');
-            } else {
-                alert('Message sent successfully!');
-                contactForm.reset();
-            }
-        });
-
-        // API Playground
-        const jokeBtn = document.getElementById('fetch-joke-btn');
-        const apiOutput = document.getElementById('api-output');
-        
-        jokeBtn.addEventListener('click', async () => {
-            jokeBtn.disabled = true;
-            jokeBtn.innerText = 'FETCHING...';
-            apiOutput.innerText = '// Connecting to remote server...';
-            
-            try {
-                const res = await fetch('https://v2.jokeapi.dev/joke/Programming?blacklistFlags=nsfw,religious,political,racist,sexist,explicit&type=single');
-                const data = await res.json();
-                
-                setTimeout(() => {
-                    const jokeText = data.joke || `${data.setup}\n${data.delivery}`;
-                    apiOutput.innerText = `// Success: 200 OK\n\n"${jokeText}"`;
-                    jokeBtn.disabled = false;
-                    jokeBtn.innerText = 'RUN SCRIPT';
-                }, 800);
-            } catch (e) {
-                apiOutput.innerText = '// Error: 404 Humor Not Found';
-                jokeBtn.disabled = false;
-                jokeBtn.innerText = 'RETRY';
-            }
-        });
-
-        // Meme Widget
-        const memeTrigger = document.getElementById('meme-trigger');
-        const memePopup = document.getElementById('meme-popup');
-        const closeMeme = document.getElementById('close-meme');
-        const nextMeme = document.getElementById('next-meme');
-        const memeImg = document.getElementById('meme-img');
-        const memeLoader = document.getElementById('meme-loader');
-        const memeError = document.getElementById('meme-error');
-        const memeCaption = document.getElementById('meme-caption');
-
-        function toggleMeme() {
-            memePopup.classList.toggle('hidden');
-            setTimeout(() => {
-                memePopup.classList.toggle('opacity-0');
-                memePopup.classList.toggle('translate-y-4');
-            }, 10);
-            if (!memePopup.classList.contains('hidden') && memeImg.src === "") {
-                fetchMeme();
-            }
-        }
-
-        async function fetchMeme() {
-            memeLoader.classList.remove('hidden');
-            memeImg.classList.add('hidden');
-            memeError.classList.add('hidden');
-            nextMeme.disabled = true;
-            nextMeme.innerText = 'Loading...';
-
-            try {
-                const subreddits = ['gifs', 'wholesomegifs', 'educationalgifs', 'funnygifs'];
-                const randomSub = subreddits[Math.floor(Math.random() * subreddits.length)];
-                const res = await fetch(`https://meme-api.com/gimme/${randomSub}`);
-                const data = await res.json();
-                
-                if(data.url) {
-                    memeImg.src = data.url;
-                    memeImg.onload = () => {
-                        memeLoader.classList.add('hidden');
-                        memeImg.classList.remove('hidden');
-                        nextMeme.disabled = false;
-                        nextMeme.innerText = 'Next GIF 🤣';
-                    };
-                    memeCaption.innerText = data.title;
-                } else {
-                    throw new Error('No URL');
-                }
-            } catch (e) {
-                memeLoader.classList.add('hidden');
-                memeError.classList.remove('hidden');
-                nextMeme.disabled = false;
-                nextMeme.innerText = 'Try Again';
-            }
-        }
-
-        memeTrigger.addEventListener('click', (e) => { e.stopPropagation(); toggleMeme(); });
-        closeMeme.addEventListener('click', (e) => { e.stopPropagation(); toggleMeme(); });
-        nextMeme.addEventListener('click', (e) => { e.stopPropagation(); fetchMeme(); });
-
-        // Mobile Menu
-        const mobileBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const mobileLinks = document.querySelectorAll('.mobile-link');
-        
-        mobileBtn.addEventListener('click', () => {
-            const spans = mobileBtn.querySelectorAll('span');
-            const isOpen = !mobileMenu.classList.contains('translate-x-full');
-            
-            if (isOpen) {
-                mobileMenu.classList.add('translate-x-full');
-                spans[0].style.transform = 'none';
-                spans[1].style.opacity = '1';
-                spans[2].style.transform = 'none';
-            } else {
-                mobileMenu.classList.remove('translate-x-full');
-                spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
-                spans[1].style.opacity = '0';
-                spans[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
-            }
-        });
-
-        mobileLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                mobileBtn.click();
-            });
-        });
-
-        // Navbar Scroll Effect
-        let lastScrollY = window.scrollY;
-        window.addEventListener('scroll', () => {
-            const navbar = document.getElementById('navbar');
-            if (window.scrollY > lastScrollY && window.scrollY > 100) {
-                navbar.style.transform = 'translateY(-100%)';
-            } else {
-                navbar.style.transform = 'translateY(0)';
-            }
-            lastScrollY = window.scrollY;
-            
-            // Fade in sections
-            document.querySelectorAll('.fade-in-section').forEach(el => {
-                const rect = el.getBoundingClientRect();
-                if (rect.top <= window.innerHeight * 0.75) {
-                    el.classList.add('is-visible');
-                }
-            });
-        });
-
-        // --- 4. Visual Effects (Ribbons) ---
-        function initRibbons() {
-            const container = document.getElementById('ribbons-container');
-            if (!container || !window.OGL) return;
-
-            const { Renderer, Transform, Vec3, Color, Polyline } = window.OGL;
-            
-            const config = {
-                colors: ["#FC8EAC", "#64ffda", "#a8b2d1"],
-                baseSpring: 0.03, baseFriction: 0.9, baseThickness: 30, offsetFactor: 0.05,
-                maxAge: 500, pointCount: 50, speedMultiplier: 0.6,
-                enableFade: false, enableShaderEffect: false, effectAmplitude: 2
-            };
-
-            const renderer = new Renderer({ dpr: window.devicePixelRatio || 2, alpha: true });
-            const gl = renderer.gl;
-            container.appendChild(gl.canvas);
-            gl.canvas.style.width = '100%';
-            gl.canvas.style.height = '100%';
-
-            const scene = new Transform();
-            const lines = [];
-
-            const vertex = `precision highp float; attribute vec3 position; attribute vec3 next; attribute vec3 prev; attribute vec2 uv; attribute float side; uniform vec2 uResolution; uniform float uDPR; uniform float uThickness; uniform float uTime; varying vec2 vUV; vec4 getPosition() { vec4 current = vec4(position, 1.0); vec2 aspect = vec2(uResolution.x / uResolution.y, 1.0); vec2 nextScreen = next.xy * aspect; vec2 prevScreen = prev.xy * aspect; vec2 tangent = normalize(nextScreen - prevScreen); vec2 normal = vec2(-tangent.y, tangent.x); normal /= aspect; normal *= mix(1.0, 0.1, pow(abs(uv.y - 0.5) * 2.0, 2.0)); float dist = length(nextScreen - prevScreen); normal *= smoothstep(0.0, 0.02, dist); float pixelWidthRatio = 1.0 / (uResolution.y / uDPR); float pixelWidth = current.w * pixelWidthRatio; normal *= pixelWidth * uThickness; current.xy -= normal * side; return current; } void main() { vUV = uv; gl_Position = getPosition(); }`;
-            const fragment = `precision highp float; uniform vec3 uColor; uniform float uOpacity; varying vec2 vUV; void main() { gl_FragColor = vec4(uColor, uOpacity); }`;
-
-            function resize() {
-                renderer.setSize(container.clientWidth, container.clientHeight);
-                lines.forEach(line => line.polyline.resize());
-            }
-            window.addEventListener('resize', resize);
-
-            const center = (config.colors.length - 1) / 2;
-            config.colors.forEach((color, index) => {
-                const line = {
-                    spring: config.baseSpring + (Math.random() - 0.5) * 0.05,
-                    friction: config.baseFriction + (Math.random() - 0.5) * 0.05,
-                    mouseVelocity: new Vec3(),
-                    mouseOffset: new Vec3((index - center) * config.offsetFactor, 0, 0),
-                    points: Array(config.pointCount).fill(0).map(() => new Vec3())
-                };
-                line.polyline = new Polyline(gl, {
-                    points: line.points, vertex, fragment,
-                    uniforms: { uColor: { value: new Color(color) }, uThickness: { value: config.baseThickness }, uOpacity: { value: 1.0 } }
-                });
-                line.polyline.mesh.setParent(scene);
-                lines.push(line);
-            });
-            resize();
-
-            const mouse = new Vec3();
-            function updateMouse(e) {
-                if(e.changedTouches && e.changedTouches.length) {
-                    mouse.set((e.changedTouches[0].clientX / container.clientWidth) * 2 - 1, (e.changedTouches[0].clientY / container.clientHeight) * -2 + 1, 0);
-                } else {
-                    mouse.set((e.clientX / container.clientWidth) * 2 - 1, (e.clientY / container.clientHeight) * -2 + 1, 0);
-                }
-            }
-            document.addEventListener('mousemove', updateMouse);
-            document.addEventListener('touchmove', updateMouse);
-
-            const tmp = new Vec3();
-            function update() {
-                requestAnimationFrame(update);
-                lines.forEach(line => {
-                    tmp.copy(mouse).add(line.mouseOffset).sub(line.points[0]).multiply(line.spring);
-                    line.mouseVelocity.add(tmp).multiply(line.friction);
-                    line.points[0].add(line.mouseVelocity);
-                    for(let i=1; i<line.points.length; i++) line.points[i].lerp(line.points[i-1], 0.9);
-                    line.polyline.updateGeometry();
-                });
-                renderer.render({ scene });
-            }
-            update();
-        }
-
-        // --- 5. Visual Effects (ClickSpark) ---
-        function initClickSpark() {
-            const canvas = document.getElementById('click-spark-canvas');
-            if(!canvas) return;
-            const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            
-            const sparks = [];
-            
-            window.addEventListener('resize', () => {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            });
-
-            document.addEventListener('click', (e) => {
-                for(let i=0; i<8; i++) {
-                    sparks.push({
-                        x: e.clientX, y: e.clientY,
-                        angle: (Math.PI * 2 * i) / 8,
-                        startTime: performance.now()
-                    });
-                }
-            });
-
-            function draw(time) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                for(let i=sparks.length-1; i>=0; i--) {
-                    const s = sparks[i];
-                    const elapsed = time - s.startTime;
-                    if(elapsed > 400) { sparks.splice(i, 1); continue; }
-                    
-                    const p = elapsed / 400;
-                    const ease = p * (2 - p);
-                    const dist = ease * 30; // Radius
-                    const len = 10 * (1 - ease);
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(s.x + dist * Math.cos(s.angle), s.y + dist * Math.sin(s.angle));
-                    ctx.lineTo(s.x + (dist + len) * Math.cos(s.angle), s.y + (dist + len) * Math.sin(s.angle));
-                    ctx.strokeStyle = '#64ffda';
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                }
-                requestAnimationFrame(draw);
-            }
-            requestAnimationFrame(draw);
-        }
-
-        // Init All
         document.addEventListener('DOMContentLoaded', () => {
-            fetchAndRender();
-            initRibbons();
-            initClickSpark();
+            
+            // --- API PLAYGROUND LOGIC ---
+            const jokeBtn = document.getElementById('fetch-joke-btn');
+            const apiOutput = document.getElementById('api-output');
+            
+            if(jokeBtn && apiOutput) {
+                jokeBtn.addEventListener('click', async () => {
+                    jokeBtn.disabled = true;
+                    jokeBtn.innerText = 'FETCHING...';
+                    apiOutput.innerText = '// Connecting to remote server...';
+                    
+                    try {
+                        const res = await fetch('https://v2.jokeapi.dev/joke/Programming?blacklistFlags=nsfw,religious,political,racist,sexist,explicit&type=single');
+                        const data = await res.json();
+                        
+                        setTimeout(() => {
+                            const jokeText = data.joke || `${data.setup}\n${data.delivery}`;
+                            apiOutput.innerText = `// Success: 200 OK\n\n"${jokeText}"`;
+                            jokeBtn.disabled = false;
+                            jokeBtn.innerText = 'RUN SCRIPT';
+                        }, 800);
+                    } catch (e) {
+                        apiOutput.innerText = '// Error: 404 Humor Not Found';
+                        jokeBtn.disabled = false;
+                        jokeBtn.innerText = 'RETRY';
+                    }
+                });
+            }
+
+            // --- MEME WIDGET LOGIC ---
+            const memeTrigger = document.getElementById('meme-trigger');
+            const memePopup = document.getElementById('meme-popup');
+            const closeMeme = document.getElementById('close-meme');
+            const nextMeme = document.getElementById('next-meme');
+            const memeImg = document.getElementById('meme-img');
+            const memeLoader = document.getElementById('meme-loader');
+            const memeError = document.getElementById('meme-error');
+            const memeCaption = document.getElementById('meme-caption');
+
+            function toggleMeme() {
+                if(memePopup.classList.contains('active')) {
+                    memePopup.classList.remove('active');
+                } else {
+                    memePopup.classList.add('active');
+                    if (memeImg.src === "" || memeImg.src === window.location.href) {
+                        fetchMeme();
+                    }
+                }
+            }
+
+            async function fetchMeme() {
+                memeLoader.classList.remove('hidden');
+                memeImg.classList.add('hidden');
+                memeError.classList.add('hidden');
+                nextMeme.disabled = true;
+                nextMeme.innerText = 'Loading...';
+
+                try {
+                    const subreddits = ['gifs', 'wholesomegifs', 'educationalgifs', 'funnygifs'];
+                    const randomSub = subreddits[Math.floor(Math.random() * subreddits.length)];
+                    const res = await fetch(`https://meme-api.com/gimme/${randomSub}`);
+                    const data = await res.json();
+                    
+                    if(data.url) {
+                        memeImg.src = data.url;
+                        memeImg.onload = () => {
+                            memeLoader.classList.add('hidden');
+                            memeImg.classList.remove('hidden');
+                            nextMeme.disabled = false;
+                            nextMeme.innerText = 'Next GIF 🤣';
+                        };
+                        memeCaption.innerText = data.title;
+                    } else {
+                        throw new Error('No URL');
+                    }
+                } catch (e) {
+                    memeLoader.classList.add('hidden');
+                    memeError.classList.remove('hidden');
+                    nextMeme.disabled = false;
+                    nextMeme.innerText = 'Try Again';
+                }
+            }
+
+            if(memeTrigger) {
+                memeTrigger.addEventListener('click', (e) => { e.stopPropagation(); toggleMeme(); });
+                closeMeme.addEventListener('click', (e) => { e.stopPropagation(); toggleMeme(); });
+                nextMeme.addEventListener('click', (e) => { e.stopPropagation(); fetchMeme(); });
+            }
         });
     </script>
 </body>
