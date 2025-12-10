@@ -1,4 +1,5 @@
 {
   "name": "Ann Fritz Portfolio & Admin",
-  "description": "A dynamic portfolio and admin panel connected to Supabase for content management."
+  "description": "A dynamic portfolio and admin panel connected to Supabase for content management.",
+  "requestFramePermissions": []
 }

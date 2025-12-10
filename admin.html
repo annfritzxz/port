@@ -594,7 +594,7 @@
     <!-- JAVASCRIPT LOGIC -->
     <script>
         // --- DATA MANAGEMENT ---
-        // IMPORTANT: This key must match the one in your main index.js/script.js
+        // IMPORTANT: This key must match the one in your index.html's script.js
         const STORAGE_KEY = 'ann_portfolio_db_v2';
         
         // This default data matches the fixed version of your website
@@ -691,7 +691,9 @@
 
         function saveDB() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-            initCMS(); // Re-render everything
+            // Trigger storage event for other tabs
+            window.dispatchEvent(new Event('storage'));
+            initCMS(); 
         }
 
         function renderDashboard() {
@@ -722,8 +724,6 @@
             db.projects.forEach(p => {
                 const card = document.createElement('div');
                 card.className = 'admin-card';
-                // Note: When displaying image path here, we just show the string name
-                // If it's a long base64 string or an imported object from main site, we handle gracefully
                 let displayImg = p.img;
                 if(typeof p.img === 'object' || (typeof p.img === 'string' && p.img.length > 50)) {
                    displayImg = "Bundled/External Image";
@@ -747,13 +747,9 @@
             const img = document.getElementById('proj-img').value;
 
             if(title) {
-                // We add new projects with the string filename.
-                // NOTE: For this to work in the main site, the file 'img' must exist 
-                // in the public folder if using Vite/Webpack.
                 db.projects.push({ id: Date.now(), title, tech, img });
                 hideForms();
                 saveDB();
-                // Clear inputs
                 document.getElementById('proj-title').value = '';
                 document.getElementById('proj-tech').value = '';
                 document.getElementById('proj-img').value = '';
@@ -874,6 +870,9 @@
         function hideForms() {
             document.querySelectorAll('.edit-form-container').forEach(f => f.style.display = 'none');
         }
+
+        // Initialize immediately if logged in previously (optional, for dev convenience)
+        // initCMS(); 
 
     </script>
 </body>
