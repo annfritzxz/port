@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ann Fritz - Admin Panel</title>
     <style>
-        /* --- CSS VARIABLES (COPIED FROM PORTFOLIO) --- */
+        /* --- CSS VARIABLES --- */
         :root {
             --navy: #0a192f;
             --light-navy: #112240;
@@ -169,10 +169,28 @@
             border-left-color: var(--green);
         }
 
-        .logout-container {
+        .action-container {
             padding: 2rem;
             border-top: 1px solid var(--lightest-navy);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
+
+        .btn-view-site {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--lightest-slate);
+            color: var(--lightest-slate);
+            background: transparent;
+            border-radius: 4px;
+            text-decoration: none;
+            text-align: center;
+            font-size: 0.8rem;
+            display: block;
+        }
+
+        .btn-view-site:hover { background-color: rgba(255, 255, 255, 0.1); }
 
         .btn-logout {
             width: 100%;
@@ -227,6 +245,7 @@
             border-radius: 6px;
             border: 1px solid var(--lightest-navy);
             transition: transform 0.2s;
+            position: relative;
         }
 
         .admin-card:hover {
@@ -320,11 +339,11 @@
             <form id="login-form">
                 <div class="input-group">
                     <label>Username</label>
-                    <input type="text" id="username" placeholder="admin" required>
+                    <input type="text" id="username" placeholder="Username" required>
                 </div>
                 <div class="input-group">
                     <label>Password</label>
-                    <input type="password" id="password" placeholder="admin" required>
+                    <input type="password" id="password" placeholder="Password" required>
                 </div>
                 <button type="submit" class="btn-primary">Initialize Session</button>
             </form>
@@ -349,7 +368,8 @@
                 <li><button class="menu-btn" onclick="switchTab('achievements')">Achievements</button></li>
                 <li><button class="menu-btn" onclick="switchTab('contact')">Messages</button></li>
             </ul>
-            <div class="logout-container">
+            <div class="action-container">
+                <a href="index.html" target="_blank" class="btn-view-site">View Website ↗</a>
                 <button class="btn-logout" onclick="logout()">Terminate Session</button>
             </div>
         </nav>
@@ -498,6 +518,7 @@
                     <div class="input-group">
                         <label>Image Filename</label>
                         <input type="text" id="proj-img" placeholder="e.g. woww.png">
+                        <p style="font-size: 0.75rem; color: #ff5f56; margin-top: 5px;">* IMPORTANT: Ensure this file exists in your project folder!</p>
                     </div>
                     <div style="text-align: right;">
                         <button class="btn-sm" onclick="hideForms()">Cancel</button>
@@ -573,8 +594,10 @@
     <!-- JAVASCRIPT LOGIC -->
     <script>
         // --- DATA MANAGEMENT ---
-        const STORAGE_KEY = 'ann_portfolio_db';
+        // IMPORTANT: This key must match the one in your main index.js/script.js
+        const STORAGE_KEY = 'ann_portfolio_db_v2';
         
+        // This default data matches the fixed version of your website
         const defaultData = {
             about: {
                 bio1: "Hello! I’m Ann Fritz De Luna, a passionate and driven Information Technology student who enjoys turning creative ideas into functional and visually appealing web experiences.",
@@ -588,11 +611,11 @@
             ],
             projects: [
                 { id: 1, title: 'Job Hunting', tech: 'Job • Hunting • Website', img: 'woww.png' },
-                { id: 2, title: 'Point of Sale', tech: 'Java • Netbeans • MySQL', img: 'hehe.jpg' },
-                { id: 3, title: 'Hotel Reservation', tech: 'Html • JavaScript • CSS', img: 'haha.png' },
-                { id: 4, title: 'Make Cents', tech: 'Capstone • Project', img: 'make.png' },
+                { id: 2, title: 'Point of Sale', tech: 'Java • Netbeans • MySQL', img: 'whehe.jpg' },
+                { id: 3, title: 'Hotel Reservation', tech: 'Html • JavaScript • CSS', img: 'whaha.png' },
+                { id: 4, title: 'Make Cents', tech: 'Capstone • Project', img: 'wmake.png' },
                 { id: 5, title: 'Skill Up', tech: 'Figma • Student • Teacher', img: 'skill.png' },
-                { id: 6, title: 'Jumper', tech: 'GODOT • Game • Play', img: 'godot.png' }
+                { id: 6, title: 'Jumper', tech: 'GODOT • Game • Play', img: 'wgodot.png' }
             ],
             achievements: [
                 { id: 1, title: 'With Honors', desc: "Junior HighSchool With Honors at Saint Anne's Catholic School.", year: '2020' },
@@ -652,6 +675,7 @@
             if (stored) {
                 db = JSON.parse(stored);
             } else {
+                // If no data, use default and save
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
             }
 
@@ -698,10 +722,17 @@
             db.projects.forEach(p => {
                 const card = document.createElement('div');
                 card.className = 'admin-card';
+                // Note: When displaying image path here, we just show the string name
+                // If it's a long base64 string or an imported object from main site, we handle gracefully
+                let displayImg = p.img;
+                if(typeof p.img === 'object' || (typeof p.img === 'string' && p.img.length > 50)) {
+                   displayImg = "Bundled/External Image";
+                }
+
                 card.innerHTML = `
                     <h3 style="color:var(--white)">${p.title}</h3>
                     <p style="font-size:0.85rem; margin-bottom:0.5rem">${p.tech}</p>
-                    <p class="font-mono text-green" style="font-size:0.8rem">${p.img}</p>
+                    <p class="font-mono text-green" style="font-size:0.8rem">${displayImg}</p>
                     <div class="card-actions">
                         <button class="btn-sm btn-delete" onclick="deleteItem('project', ${p.id})">Delete</button>
                     </div>
@@ -716,6 +747,9 @@
             const img = document.getElementById('proj-img').value;
 
             if(title) {
+                // We add new projects with the string filename.
+                // NOTE: For this to work in the main site, the file 'img' must exist 
+                // in the public folder if using Vite/Webpack.
                 db.projects.push({ id: Date.now(), title, tech, img });
                 hideForms();
                 saveDB();
