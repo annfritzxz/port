@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ann Fritz - Admin Panel</title>
+    <style>
+        /* --- CSS VARIABLES (COPIED FROM PORTFOLIO) --- */
+        :root {
+            --navy: #0a192f;
+            --light-navy: #112240;
+            --lightest-navy: #233554;
+            --slate: #8892b0;
+            --light-slate: #a8b2d1;
+            --lightest-slate: #ccd6f6;
+            --white: #e6f1ff;
+            --green: #64ffda;
+            --green-tint: rgba(100, 255, 218, 0.1);
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-mono: "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--navy);
+            color: var(--slate);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* --- UTILITIES --- */
+        h1, h2, h3 { color: var(--lightest-slate); font-weight: 600; }
+        .text-green { color: var(--green); }
+        .font-mono { font-family: var(--font-mono); }
+        
+        button {
+            cursor: pointer;
+            font-family: var(--font-mono);
+            transition: all 0.25s cubic-bezier(0.645, 0.045, 0.355, 1);
+        }
+
+        /* --- LOGIN SCREEN --- */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--navy);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-box {
+            background-color: var(--light-navy);
+            padding: 2.5rem;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--lightest-navy);
+            box-shadow: 0 10px 30px -10px rgba(2, 12, 27, 0.7);
+            text-align: center;
+        }
+
+        .login-box h2 { margin-bottom: 1.5rem; }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--green);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+
+        input[type="text"], 
+        input[type="password"], 
+        input[type="email"], 
+        input[type="date"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--navy);
+            border: 1px solid var(--lightest-navy);
+            border-radius: 4px;
+            color: var(--lightest-slate);
+            font-family: var(--font-sans);
+            outline: none;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--green);
+        }
+
+        .btn-primary {
+            background-color: transparent;
+            border: 1px solid var(--green);
+            color: var(--green);
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--green-tint);
+        }
+
+        /* --- MAIN LAYOUT --- */
+        #admin-panel {
+            display: none; /* Hidden until logged in */
+            width: 100%;
+            height: 100%;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: var(--light-navy);
+            border-right: 1px solid var(--lightest-navy);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 0;
+        }
+
+        .sidebar-header {
+            padding: 0 2rem 2rem 2rem;
+            border-bottom: 1px solid var(--lightest-navy);
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            flex: 1;
+        }
+
+        .sidebar-menu li {
+            width: 100%;
+        }
+
+        .menu-btn {
+            width: 100%;
+            text-align: left;
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            color: var(--slate);
+            font-size: 0.9rem;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-btn:hover, .menu-btn.active {
+            background-color: var(--lightest-navy);
+            color: var(--green);
+            border-left-color: var(--green);
+        }
+
+        .logout-container {
+            padding: 2rem;
+            border-top: 1px solid var(--lightest-navy);
+        }
+
+        .btn-logout {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ff5f56;
+            color: #ff5f56;
+            background: transparent;
+            border-radius: 4px;
+        }
+        
+        .btn-logout:hover { background-color: rgba(255, 95, 86, 0.1); }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--lightest-navy);
+        }
+
+        /* --- CARDS & TABLES --- */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .admin-card {
+            background-color: var(--light-navy);
+            padding: 1.5rem;
+            border-radius: 6px;
+            border: 1px solid var(--lightest-navy);
+            transition: transform 0.2s;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--green);
+        }
+
+        .card-actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            border-radius: 3px;
+            border: 1px solid var(--slate);
+            background: transparent;
+            color: var(--slate);
+        }
+
+        .btn-sm:hover { color: var(--green); border-color: var(--green); }
+        .btn-delete:hover { color: #ff5f56; border-color: #ff5f56; }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background-color: var(--light-navy);
+            padding: 2rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--green);
+            margin: 0.5rem 0;
+        }
+
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--light-navy);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .data-table th, .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--lightest-navy);
+        }
+        .data-table th {
+            color: var(--green);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover { background-color: var(--lightest-navy); }
+
+        /* Modal/Form Styles */
+        .edit-form-container {
+            background-color: var(--light-navy);
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid var(--green);
+            margin-bottom: 2rem;
+            display: none; /* Hidden by default */
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. LOGIN SCREEN -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h2 class="font-mono text-green">System Access</h2>
+            <form id="login-form">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="username" placeholder="admin" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="admin" required>
+                </div>
+                <button type="submit" class="btn-primary">Initialize Session</button>
+            </form>
+            <p style="margin-top: 1rem; font-size: 0.8rem; color: var(--slate);">
+                (Use 'admin' / 'admin' for UI demo)
+            </p>
+        </div>
+    </div>
+
+    <!-- 2. MAIN ADMIN PANEL -->
+    <div id="admin-panel" style="display: none;">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3 class="font-mono text-green">Ann Fritz<span style="color:white">.</span>CMS</h3>
+            </div>
+            <ul class="sidebar-menu">
+                <li><button class="menu-btn active" onclick="switchTab('dashboard')">Dashboard</button></li>
+                <li><button class="menu-btn" onclick="switchTab('about')">About Me</button></li>
+                <li><button class="menu-btn" onclick="switchTab('certificates')">Certificates</button></li>
+                <li><button class="menu-btn" onclick="switchTab('projects')">Projects</button></li>
+                <li><button class="menu-btn" onclick="switchTab('achievements')">Achievements</button></li>
+                <li><button class="menu-btn" onclick="switchTab('contact')">Messages</button></li>
+            </ul>
+            <div class="logout-container">
+                <button class="btn-logout" onclick="logout()">Terminate Session</button>
+            </div>
+        </nav>
+
+        <!-- Content -->
+        <main class="content">
+            
+            <!-- DASHBOARD TAB -->
+            <section id="dashboard" class="section active">
+                <div class="header-flex">
+                    <h2>System Overview</h2>
+                    <span class="font-mono text-green" id="current-date"></span>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Projects</h3>
+                        <div class="stat-number" id="stat-projects">6</div>
+                        <p class="font-mono text-green">Live</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Certificates</h3>
+                        <div class="stat-number" id="stat-certs">3</div>
+                        <p class="font-mono text-green">Verified</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Messages</h3>
+                        <div class="stat-number" id="stat-msgs">2</div>
+                        <p class="font-mono text-green">Unread</p>
+                    </div>
+                </div>
+
+                <h3>Recent System Activity</h3>
+                <table class="data-table" style="margin-top: 1rem;">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>System Login</td>
+                            <td>Just Now</td>
+                            <td class="text-green">Success</td>
+                        </tr>
+                        <tr>
+                            <td>Project 'Make Cents' Updated</td>
+                            <td>2 hours ago</td>
+                            <td class="text-green">Published</td>
+                        </tr>
+                        <tr>
+                            <td>New Message Received</td>
+                            <td>5 hours ago</td>
+                            <td style="color: #fca311">Pending</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- ABOUT TAB -->
+            <section id="about" class="section">
+                <div class="header-flex">
+                    <h2>Edit About Me</h2>
+                    <button class="btn-primary" style="width: auto;" onclick="saveAbout()">Save Changes</button>
+                </div>
+                
+                <div class="admin-card">
+                    <div class="input-group">
+                        <label>Bio Paragraph 1</label>
+                        <textarea rows="4" id="bio-1">Hello! I’m Ann Fritz De Luna, a passionate and driven Information Technology student...</textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>Bio Paragraph 2</label>
+                        <textarea rows="4" id="bio-2">I value effective communication, adaptability, and accountability...</textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>Skills (Comma separated)</label>
+                        <input type="text" id="skills-input" value="JavaScript, Java, Node.js, TypeScript, HTML & CSS, Python">
+                    </div>
+                </div>
+            </section>
+
+            <!-- CERTIFICATES TAB -->
+            <section id="certificates" class="section">
+                <div class="header-flex">
+                    <h2>Manage Certificates</h2>
+                    <button class="btn-primary" style="width: auto;" onclick="showAddForm('cert')">+ Add New</button>
+                </div>
+
+                <!-- Hidden Form -->
+                <div id="cert-form" class="edit-form-container">
+                    <h3 class="font-mono text-green" style="margin-bottom: 1rem;">Add/Edit Certificate</h3>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Certificate Name</label>
+                            <input type="text" id="cert-title" placeholder="e.g. Microsoft">
+                        </div>
+                        <div class="input-group">
+                            <label>Company/Type</label>
+                            <input type="text" id="cert-company" placeholder="e.g. Office">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Date</label>
+                            <input type="text" id="cert-date" placeholder="May 22, 2022">
+                        </div>
+                        <div class="input-group">
+                            <label>Details (Comma separated)</label>
+                            <input type="text" id="cert-items" placeholder="Excel Expert, Administered by LCU, Passed">
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <button class="btn-sm" onclick="hideForms()">Cancel</button>
+                        <button class="btn-primary" style="width: auto;" onclick="saveCertificate()">Save</button>
+                    </div>
+                </div>
+
+                <div class="card-grid" id="cert-list">
+                    <!-- Javascript will populate this -->
+                </div>
+            </section>
+
+            <!-- PROJECTS TAB -->
+            <section id="projects" class="section">
+                <div class="header-flex">
+                    <h2>Manage Projects</h2>
+                    <button class="btn-primary" style="width: auto;" onclick="showAddForm('project')">+ Add New</button>
+                </div>
+
+                 <!-- Hidden Form -->
+                 <div id="project-form" class="edit-form-container">
+                    <h3 class="font-mono text-green" style="margin-bottom: 1rem;">Add/Edit Project</h3>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Project Title</label>
+                            <input type="text" id="proj-title" placeholder="e.g. Job Hunting">
+                        </div>
+                        <div class="input-group">
+                            <label>Tech Stack</label>
+                            <input type="text" id="proj-tech" placeholder="e.g. Job • Hunting • Website">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Image Filename</label>
+                        <input type="text" id="proj-img" placeholder="e.g. woww.png">
+                    </div>
+                    <div style="text-align: right;">
+                        <button class="btn-sm" onclick="hideForms()">Cancel</button>
+                        <button class="btn-primary" style="width: auto;" onclick="saveProject()">Save</button>
+                    </div>
+                </div>
+
+                <div class="card-grid" id="project-list">
+                    <!-- Javascript will populate this -->
+                </div>
+            </section>
+
+             <!-- ACHIEVEMENTS TAB -->
+             <section id="achievements" class="section">
+                <div class="header-flex">
+                    <h2>Manage Achievements</h2>
+                    <button class="btn-primary" style="width: auto;" onclick="showAddForm('achieve')">+ Add New</button>
+                </div>
+
+                <!-- Hidden Form -->
+                <div id="achieve-form" class="edit-form-container">
+                    <h3 class="font-mono text-green" style="margin-bottom: 1rem;">Add/Edit Achievement</h3>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Title</label>
+                            <input type="text" id="achieve-title" placeholder="e.g. Dean's Lister">
+                        </div>
+                        <div class="input-group">
+                            <label>Year</label>
+                            <input type="text" id="achieve-year" placeholder="e.g. 2024">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Description</label>
+                        <textarea rows="3" id="achieve-desc" placeholder="Details..."></textarea>
+                    </div>
+                    <div style="text-align: right;">
+                        <button class="btn-sm" onclick="hideForms()">Cancel</button>
+                        <button class="btn-primary" style="width: auto;" onclick="saveAchievement()">Save</button>
+                    </div>
+                </div>
+
+                <div class="card-grid" id="achieve-list">
+                    <!-- Javascript will populate this -->
+                </div>
+            </section>
+
+            <!-- MESSAGES TAB -->
+            <section id="contact" class="section">
+                <div class="header-flex">
+                    <h2>Inbox</h2>
+                    <span class="font-mono text-green" id="msg-count">0 Unread</span>
+                </div>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>From</th>
+                            <th>Email</th>
+                            <th>Message</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="message-list">
+                        <!-- JS populated -->
+                    </tbody>
+                </table>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- DATA MANAGEMENT ---
+        const STORAGE_KEY = 'ann_portfolio_db';
+        
+        const defaultData = {
+            about: {
+                bio1: "Hello! I’m Ann Fritz De Luna, a passionate and driven Information Technology student who enjoys turning creative ideas into functional and visually appealing web experiences.",
+                bio2: "I value effective communication, adaptability, and accountability, which help me collaborate well in both individual and team settings. As a student leader and active member of various organizations, I’ve honed my leadership and technical skills while balancing academics and extracurriculars.",
+                skills: ["JavaScript", "Java", "Node.js", "TypeScript", "HTML & CSS", "Python"]
+            },
+            certificates: [
+                { id: "job1", title: "Microsoft", company: "Excel", date: "May 16, 2023", items: ["Microsoft Excel (Office 2019)", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] },
+                { id: "job2", title: "Microsoft", company: "Access", date: "May 12, 2025", items: ["Microsoft Access Expert (Office 2019)", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] },
+                { id: "job3", title: "Microsoft", company: "Word", date: "May 22, 2022", items: ["Microsoft Word Expert (Office 2019)", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] }
+            ],
+            projects: [
+                { id: 1, title: 'Job Hunting', tech: 'Job • Hunting • Website', img: 'woww.png' },
+                { id: 2, title: 'Point of Sale', tech: 'Java • Netbeans • MySQL', img: 'hehe.jpg' },
+                { id: 3, title: 'Hotel Reservation', tech: 'Html • JavaScript • CSS', img: 'haha.png' },
+                { id: 4, title: 'Make Cents', tech: 'Capstone • Project', img: 'make.png' },
+                { id: 5, title: 'Skill Up', tech: 'Figma • Student • Teacher', img: 'skill.png' },
+                { id: 6, title: 'Jumper', tech: 'GODOT • Game • Play', img: 'godot.png' }
+            ],
+            achievements: [
+                { id: 1, title: 'With Honors', desc: "Junior HighSchool With Honors at Saint Anne's Catholic School.", year: '2020' },
+                { id: 2, title: 'With Honors', desc: "Senior HighSchool With Honors at Saint Anne's Catholic School.", year: '2022' },
+                { id: 3, title: "Dean's Lister", desc: "First Year Dean's Lister Awardee at La Consolacion University Philippines.", year: '2023' },
+                { id: 4, title: "Dean's Lister", desc: "Second Year Dean's Lister Awardee at La Consolacion University Philippines.", year: '2024' },
+                { id: 5, title: "Dean' Lister", desc: "Third Year Dean's Lister Awardee at La Consolacion University Philippines.", year: '2025' }
+            ],
+            messages: []
+        };
+
+        // Current state
+        let db = { ...defaultData };
+
+        // --- AUTHENTICATION ---
+        const loginScreen = document.getElementById('login-screen');
+        const adminPanel = document.getElementById('admin-panel');
+        const loginForm = document.getElementById('login-form');
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            
+            if(u === 'admin' && p === 'admin') {
+                loginScreen.style.display = 'none';
+                adminPanel.style.display = 'flex';
+                initCMS();
+            } else {
+                alert('Invalid Credentials. Try admin/admin');
+            }
+        });
+
+        function logout() {
+            if(confirm("End current session?")) {
+                location.reload();
+            }
+        }
+
+        // --- NAVIGATION ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.querySelectorAll('.section').forEach(sec => {
+                sec.classList.remove('active');
+                if(sec.id === tabId) sec.classList.add('active');
+            });
+
+            hideForms();
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function initCMS() {
+            // Load from Storage
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                db = JSON.parse(stored);
+            } else {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+            }
+
+            document.getElementById('current-date').innerText = new Date().toDateString();
+            
+            renderDashboard();
+            renderAbout();
+            renderProjects();
+            renderCertificates();
+            renderMessages();
+            renderAchievements();
+        }
+
+        function saveDB() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+            initCMS(); // Re-render everything
+        }
+
+        function renderDashboard() {
+            document.getElementById('stat-projects').innerText = db.projects.length;
+            document.getElementById('stat-certs').innerText = db.certificates.length;
+            document.getElementById('stat-msgs').innerText = db.messages.length;
+        }
+
+        // ABOUT
+        function renderAbout() {
+            document.getElementById('bio-1').value = db.about.bio1;
+            document.getElementById('bio-2').value = db.about.bio2;
+            document.getElementById('skills-input').value = db.about.skills.join(', ');
+        }
+
+        function saveAbout() {
+            db.about.bio1 = document.getElementById('bio-1').value;
+            db.about.bio2 = document.getElementById('bio-2').value;
+            db.about.skills = document.getElementById('skills-input').value.split(',').map(s => s.trim()).filter(s => s);
+            saveDB();
+            alert("About section updated!");
+        }
+
+        // PROJECTS
+        function renderProjects() {
+            const container = document.getElementById('project-list');
+            container.innerHTML = '';
+            db.projects.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'admin-card';
+                card.innerHTML = `
+                    <h3 style="color:var(--white)">${p.title}</h3>
+                    <p style="font-size:0.85rem; margin-bottom:0.5rem">${p.tech}</p>
+                    <p class="font-mono text-green" style="font-size:0.8rem">${p.img}</p>
+                    <div class="card-actions">
+                        <button class="btn-sm btn-delete" onclick="deleteItem('project', ${p.id})">Delete</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function saveProject() {
+            const title = document.getElementById('proj-title').value;
+            const tech = document.getElementById('proj-tech').value;
+            const img = document.getElementById('proj-img').value;
+
+            if(title) {
+                db.projects.push({ id: Date.now(), title, tech, img });
+                hideForms();
+                saveDB();
+                // Clear inputs
+                document.getElementById('proj-title').value = '';
+                document.getElementById('proj-tech').value = '';
+                document.getElementById('proj-img').value = '';
+            } else {
+                alert("Please enter a title");
+            }
+        }
+
+        // CERTIFICATES
+        function renderCertificates() {
+            const container = document.getElementById('cert-list');
+            container.innerHTML = '';
+            db.certificates.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'admin-card';
+                card.innerHTML = `
+                    <h3 style="color:var(--white)">${c.title} <span class="text-green">${c.company}</span></h3>
+                    <p class="font-mono" style="font-size:0.8rem; opacity:0.7; margin-bottom:0.5rem">${c.date}</p>
+                    <p style="font-size:0.85rem;">${c.items.length} items</p>
+                    <div class="card-actions">
+                        <button class="btn-sm btn-delete" onclick="deleteItem('cert', '${c.id}')">Delete</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function saveCertificate() {
+            const title = document.getElementById('cert-title').value;
+            const company = document.getElementById('cert-company').value;
+            const date = document.getElementById('cert-date').value;
+            const itemsStr = document.getElementById('cert-items').value;
+
+            if(title) {
+                const items = itemsStr.split(',').map(s => s.trim()).filter(s => s);
+                db.certificates.push({ id: "cert_" + Date.now(), title, company, date, items });
+                hideForms();
+                saveDB();
+                document.getElementById('cert-title').value = '';
+                document.getElementById('cert-company').value = '';
+                document.getElementById('cert-date').value = '';
+                document.getElementById('cert-items').value = '';
+            }
+        }
+
+        // ACHIEVEMENTS
+        function renderAchievements() {
+            const container = document.getElementById('achieve-list');
+            container.innerHTML = '';
+            db.achievements.forEach(a => {
+                const card = document.createElement('div');
+                card.className = 'admin-card';
+                card.innerHTML = `
+                    <div style="font-size:1.5rem; margin-bottom:0.5rem">🏆</div>
+                    <h3 style="color:var(--white)">${a.title}</h3>
+                    <p style="font-size:0.85rem;">${a.desc}</p>
+                    <p class="font-mono text-green" style="font-size:0.8rem; margin-top:0.5rem">${a.year}</p>
+                    <div class="card-actions">
+                        <button class="btn-sm btn-delete" onclick="deleteItem('achieve', ${a.id})">Delete</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function saveAchievement() {
+            const title = document.getElementById('achieve-title').value;
+            const year = document.getElementById('achieve-year').value;
+            const desc = document.getElementById('achieve-desc').value;
+
+            if(title) {
+                db.achievements.push({ id: Date.now(), title, year, desc });
+                hideForms();
+                saveDB();
+                document.getElementById('achieve-title').value = '';
+                document.getElementById('achieve-year').value = '';
+                document.getElementById('achieve-desc').value = '';
+            }
+        }
+
+        // MESSAGES
+        function renderMessages() {
+            const container = document.getElementById('message-list');
+            container.innerHTML = '';
+            document.getElementById('msg-count').innerText = db.messages.length + ' Total';
+            
+            db.messages.forEach(m => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-weight:bold; color:var(--white)">${m.name}</td>
+                    <td class="text-green">${m.email}</td>
+                    <td style="opacity:0.8">${m.msg}</td>
+                    <td><button class="btn-sm btn-delete" onclick="deleteItem('msg', ${m.id})">Delete</button></td>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // UTILS
+        function deleteItem(type, id) {
+            if(confirm("Are you sure you want to delete this item?")) {
+                if(type === 'project') db.projects = db.projects.filter(p => p.id !== id);
+                if(type === 'cert') db.certificates = db.certificates.filter(c => c.id !== id);
+                if(type === 'achieve') db.achievements = db.achievements.filter(a => a.id !== id);
+                if(type === 'msg') db.messages = db.messages.filter(m => m.id !== id);
+                
+                saveDB();
+            }
+        }
+
+        function showAddForm(type) {
+            hideForms();
+            if(type === 'project') document.getElementById('project-form').style.display = 'block';
+            if(type === 'cert') document.getElementById('cert-form').style.display = 'block';
+            if(type === 'achieve') document.getElementById('achieve-form').style.display = 'block';
+        }
+
+        function hideForms() {
+            document.querySelectorAll('.edit-form-container').forEach(f => f.style.display = 'none');
+        }
+
+    </script>
+</body>
+</html>
