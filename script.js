@@ -1,13 +1,13 @@
 // ==========================================
 // 1. IMPORTS (Add these at the very top)
 // ==========================================
-import wowwImg from './woww.png';
+//import wowwImg from './woww.png';
 import wheheImg from './whehe.jpg';
 import whahaImg from './whaha.png';
-import wmakeImg from './wmake.png';
-import wskillImg from './wskill.png';
-import wgodotImg from './wgodot.png';
-import cvPdf from './wcv.pdf';
+//import wmakeImg from './wmake.png';
+//import wskillImg from './wskill.png';
+//import wgodotImg from './wgodot.png';
+
 
 // ==========================================
 // 2. DATA MANAGER
@@ -28,12 +28,12 @@ const defaultData = {
         { id: "job3", title: "Microsoft", company: "Word", date: "May 22, 2022", items: ["Microsoft Word Expert (Office 2019)", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] }
     ],
     projects: [
-        { id: 1, title: 'Job Hunting', tech: 'Job • Hunting • Website', img: wowwImg },
-        { id: 2, title: 'Point of Sale', tech: 'Java • Netbeans • MySQL', img: wheheImg },
-        { id: 3, title: 'Hotel Reservation', tech: 'Html • JavaScript • CSS', img: whahaImg },
-        { id: 4, title: 'Make Cents', tech: 'Capstone • Project', img: wmakeImg },
-        { id: 5, title: 'Skill Up', tech: 'Figma • Student • Teacher', img: wskillImg },
-        { id: 6, title: 'Jumper', tech: 'GODOT • Game • Play', img: wgodotImg }
+        { id: 1, title: 'Job Hunting', tech: 'Job • Hunting • Website', img: './woww.png' },
+        { id: 2, title: 'Point of Sale', tech: 'Java • Netbeans • MySQL', img: './whehe.jpg' },
+        { id: 3, title: 'Hotel Reservation', tech: 'Html • JavaScript • CSS', img: './whaha.png' },
+        { id: 4, title: 'Make Cents', tech: 'Capstone • Project', img: './wmake.png' },
+        { id: 5, title: 'Skill Up', tech: 'Figma • Student • Teacher', img: './wskill.png' },
+        { id: 6, title: 'Jumper', tech: 'GODOT • Game • Play', img: './wgodot.png' }
     ],
     achievements: [
         { id: 1, title: 'With Honors', desc: "Junior HighSchool With Honors at Saint Anne's Catholic School.", year: '2020' },
