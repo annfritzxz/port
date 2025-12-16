@@ -1,6 +1,4 @@
-// ==========================================
-// 1. DATA MANAGER
-// ==========================================
+
 
 const STORAGE_KEY = 'ann_portfolio_db_v2';
 
@@ -36,7 +34,7 @@ const defaultData = {
 const getPortfolioData = () => {
     const data = localStorage.getItem(STORAGE_KEY);
     if (!data) {
-        // If nothing is in storage, save default and return it
+        
         localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData));
         return defaultData;
     }
@@ -51,7 +49,7 @@ const updatePortfolioData = (updatedData) => {
 const renderDynamicContent = () => {
     const data = getPortfolioData();
 
-    // 1. Render About
+   
     const aboutTextContainer = document.querySelector('.about-text');
     if (aboutTextContainer) {
         let skillsHtml = '';
@@ -67,7 +65,7 @@ const renderDynamicContent = () => {
         }
     }
 
-    // 2. Render Certificates
+    
     const certTabsContainer = document.querySelector('.certificate-tabs');
     const certContentContainer = document.querySelector('.certificate-content');
     
@@ -98,7 +96,7 @@ const renderDynamicContent = () => {
         certTabsContainer.innerHTML = tabsHtml;
         certContentContainer.innerHTML = contentHtml;
         
-        // Re-attach listeners because we replaced the HTML
+        
         const tabButtons = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
         
@@ -114,7 +112,7 @@ const renderDynamicContent = () => {
         });
     }
 
-    // 3. Render Projects
+   
     const projectsGrid = document.querySelector('.decay-cards-grid');
     if (projectsGrid && data.projects) {
         let html = '';
@@ -131,11 +129,11 @@ const renderDynamicContent = () => {
             `;
         });
         projectsGrid.innerHTML = html;
-        // Re-initialize hover effects on new cards
+        
         setTimeout(initDecayCards, 100); 
     }
 
-    // 4. Render Achievements
+   
     const achievementsGrid = document.querySelector('.achievements-spotlight-grid');
     if (achievementsGrid && data.achievements) {
         let html = '';
@@ -158,7 +156,7 @@ const renderDynamicContent = () => {
 };
 
 const initNavigation = () => {
-    // Mobile Navigation Toggle
+  
     const hamburger = document.querySelector(".hamburger")
     const navMenu = document.querySelector(".nav-menu")
 
@@ -188,7 +186,7 @@ const initNavigation = () => {
         })
     }
 
-    // Smooth Scroll
+    
     document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
         anchor.addEventListener("click", function (e) {
             e.preventDefault()
@@ -203,7 +201,7 @@ const initNavigation = () => {
         })
     })
 
-    // Active nav link on scroll
+    
     const sections = document.querySelectorAll(".section, .hero")
     const navLinks = document.querySelectorAll(".nav-link")
 
@@ -225,7 +223,7 @@ const initNavigation = () => {
     })
 };
 
-// Scroll Animation
+
 const initScrollObserver = () => {
     const observerOptions = {
         threshold: 0.1,
@@ -249,7 +247,7 @@ const initScrollObserver = () => {
     })
 };
 
-// Profile Card
+
 const initProfileCard = () => {
     const wrapper = document.querySelector(".pc-card-wrapper")
     const card = document.querySelector(".pc-card")
@@ -362,7 +360,7 @@ const initProfileCard = () => {
     }
 }
 
-// Ribbons
+
 const initRibbons = () => {
     const container = document.getElementById("ribbons-container")
     if (!container || !window.OGL) return
