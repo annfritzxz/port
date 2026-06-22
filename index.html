@@ -477,8 +477,12 @@
             <div class="about-content">
                 <div class="about-text">
                     <!-- Restored original photo in About Me -->
-                    <div class="about-photo-container">
-                        <img src="hahame.jpg" alt="Ann Fritz De Luna" class="about-photo" loading="lazy" style="width:150px;height:150px;object-fit:cover;border-radius:8px;margin-bottom:12px;">
+                    <div class="about-photo-container" style="width:320px; height:320px; display:flex; align-items:center; justify-content:center; margin-bottom:12px;">
+                        <!-- Lanyard React component mount point. Replace this static img with the <Lanyard /> React component during integration. -->
+                        <div id="lanyard-root" style="width:100%; height:100%; border-radius:12px; overflow:hidden; background:#111; display:flex; align-items:center; justify-content:center;">
+                            <!-- Fallback static image shown when JS is not mounted -->
+                            <img src="hahame.jpg" alt="Ann Fritz De Luna" class="about-photo" loading="lazy" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+                        </div>
                     </div>
                     <!-- Updated dynamic content: GitHub profile -->
                     <p>
