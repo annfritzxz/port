@@ -218,6 +218,34 @@
             font-size: 2.2rem;
         }
 
+        .hero {
+            padding: 90px 0 80px;
+        }
+
+        .hero-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 3rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .hero-content {
+            flex: 1 1 55%;
+            max-width: 640px;
+        }
+
+        .hero-card-container {
+            flex: 0 0 420px;
+            max-width: 420px;
+        }
+
+        .pc-card-wrapper {
+            width: 100%;
+        }
+
         .hero-description {
             font-size: 1.15rem;
             max-width: 700px;
@@ -280,7 +308,6 @@
             </div>
         </div>
     </nav>
-x`x
     <!-- Hero Section -->
     <section class="hero" id="home">
         <div class="hero-container">
@@ -593,7 +620,7 @@ x`x
             // Replace 'your-cv.pdf' with the actual path to your CV file
             const link = document.createElement('a');
             link.href = 'your-cv.pdf';
-            link.download = 'Ann_Fritz_CV.pdf';
+            link.download = '.pdf';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
