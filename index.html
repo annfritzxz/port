@@ -248,20 +248,20 @@
         }
 
         .hero-card-container {
-            flex: 0 0 460px; /* increased container width for a wider profile card */
-            max-width: 460px;
+            flex: 0 0 520px; /* increased container width for a wider profile card */
+            max-width: 520px;
         }
 
         .pc-card-wrapper {
-            width: min(100%, 340px); /* make the card itself wider by about 20% */
-            max-width: 340px;
+            width: min(100%, 420px); /* wider profile card for a more prominent hero image */
+            max-width: 420px;
             margin: 0 auto;
         }
 
         .pc-inside {
             position: relative;
             inset: 0;
-            min-height: 420px; /* taller card so the image occupies most of the space */
+            min-height: 480px; /* taller card so the profile photo occupies most of the space */
             background-image: var(--inner-gradient);
             background-color: rgba(10, 16, 35, 0.92);
             overflow: hidden;
@@ -270,7 +270,7 @@
         .pc-avatar-content {
             position: relative;
             width: 100%;
-            min-height: 420px; /* ensure the avatar fills the card vertically */
+            min-height: 480px; /* ensure the avatar fills the card vertically */
             display: block;
             padding: 0; /* remove empty padding around the image */
             overflow: hidden;
@@ -282,7 +282,6 @@
             max-width: none;
             object-fit: cover; /* fill the area cleanly */
             object-position: center; /* center the image */
-            aspect-ratio: auto;
             border-radius: 0; /* allow card border radius to handle rounding */
             box-shadow: 0 26px 50px rgba(0,0,0,0.28);
             transition: transform 0.35s ease, filter 0.35s ease;
