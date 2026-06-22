@@ -380,8 +380,8 @@
                         --inner-gradient: linear-gradient(145deg,#60496e8c 0%,#71C4FF44 100%);
                         position: relative;
                         perspective: 500px;
-                        max-width: 280px;
-                        width: min(100%,280px);
+                        max-width: 420px; /* increased card width for stronger hero presence */
+                        width: min(100%,420px);
                         margin: 0 auto;
                     }
                     .pc-behind {
@@ -412,7 +412,7 @@
                     .pc-inside {
                         position: relative;
                         inset: 0;
-                        min-height: 330px;
+                        min-height: 500px; /* taller card to let the image extend fully */
                         background-image: var(--inner-gradient);
                         background-color: rgba(10, 16, 35, 0.92);
                         overflow: hidden;
@@ -436,16 +436,18 @@
                     .pc-avatar-content {
                         position: relative;
                         width: 100%;
-                        padding: 26px;
-                        display: grid;
-                        place-items: center;
+                        min-height: 500px; /* ensure the image fills the card height */
+                        padding: 0; /* remove empty inner space */
+                        overflow: hidden;
+                        display: block;
                     }
                     .pc-avatar-content .avatar {
                         width: 100%;
-                        max-width: 250px;
-                        aspect-ratio: 1 / 1;
-                        object-fit: cover;
-                        border-radius: 24px;
+                        height: 100%;
+                        max-width: none;
+                        object-fit: cover; /* fill the full profile area cleanly */
+                        object-position: center; /* center photo content */
+                        border-radius: 0; /* let the card handle rounded corners */
                         box-shadow: 0 26px 50px rgba(0,0,0,0.28);
                         transition: transform 0.35s ease, filter 0.35s ease;
                     }
