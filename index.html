@@ -314,11 +314,28 @@
     <section class="hero" id="home">
         <div class="hero-container">
             <div class="hero-card-container">
+                <style>
+                    /* Restored avatar effects */
+                    .avatar-effect{display:inline-block;position:relative;width:200px;height:200px}
+                    .avatar-effect img.avatar{width:100%;height:100%;object-fit:cover;border-radius:16px;display:block;transition:transform .35s ease,filter .35s ease;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+                    .avatar-effect:hover img.avatar{transform:translateY(-6px) scale(1.03);filter:brightness(1.02) saturate(1.05)}
+                    .avatar-effect::before{content:'';position:absolute;inset:6px;border-radius:14px;background:linear-gradient(135deg,rgba(255,255,255,0.04),rgba(0,0,0,0.02));pointer-events:none;mix-blend-mode:overlay}
+                    .avatar-glow{position:absolute;left:50%;top:50%;width:220px;height:220px;transform:translate(-50%,-50%);filter:blur(24px);opacity:.15;background:radial-gradient(circle at center, #6ce6ff 0%, #5b8cff 30%, transparent 60%);border-radius:50%;pointer-events:none}
+                    @keyframes floaty{0%{transform:translateY(0)}50%{transform:translateY(-6px)}100%{transform:translateY(0)}}
+                    .avatar-effect{animation:floaty 6s ease-in-out infinite}
+                    /* About photo adjustments */
+                    .about-photo-container{position:relative;display:inline-block}
+                    .about-photo-container .about-photo{transition:transform .35s ease,box-shadow .35s ease}
+                    .about-photo-container:hover .about-photo{transform:translateY(-4px) scale(1.02);box-shadow:0 10px 24px rgba(0,0,0,.14)}
+                </style>
                 <div class="pc-card-wrapper">
-                    <div class="pc-avatar-content">
-                        <img src="hahame.jpg" alt="Ann Fritz De Luna" class="avatar" loading="lazy">
+                        <div class="pc-avatar-content">
+                            <div class="avatar-effect">
+                                <div class="avatar-glow" aria-hidden="true"></div>
+                                <img src="hahame.jpg" alt="Ann Fritz De Luna" class="avatar" loading="lazy">
+                            </div>
+                        </div>
                     </div>
-                </div>
             </div>
             <div class="hero-content fade-in">
                 <p class="hero-greeting">Hi, my name is</p>
