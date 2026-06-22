@@ -507,8 +507,7 @@
                 </p>
                 <div class="hero-buttons">
                     <a href="#projects" class="hero-button">View My Work</a>
-                </div>
-            </div>
+                    <a href="De Luna-Resume.pdf" download="De Luna-Resume.pdf" class="hero-button cv-button">Download CV</a>
         </div>
     </section>
 
@@ -786,6 +785,14 @@
             // --- API PLAYGROUND LOGIC ---
             const jokeBtn = document.getElementById('fetch-joke-btn');
             const apiOutput = document.getElementById('api-output');
+            const downloadCvLinks = document.querySelectorAll('.cv-button');
+            
+            downloadCvLinks.forEach(link => {
+                link.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    downloadCV();
+                });
+            });
             
             if(jokeBtn && apiOutput) {
                 jokeBtn.addEventListener('click', async () => {
