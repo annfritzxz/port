@@ -63,13 +63,6 @@
         }
         .run-script-btn:hover { background-color: rgba(100, 255, 218, 0.1); }
         .run-script-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .contact-status {
-            margin-top: 12px;
-            color: #64ffda;
-            font-size: 14px;
-            line-height: 1.5;
-            font-family: 'SF Mono', 'Fira Code', monospace;
-        }
 
         /* --- MEME WIDGET STYLES --- */
         .meme-widget-container {
@@ -287,8 +280,8 @@
                             </div>
                             <div class="pc-content">
                                 <div class="pc-details">
-                                    <h3>IT Student & Web Enthusiast</h3>
-                                    <p>Building user-friendly digital experiences with a focus on design and accessibility.</p>
+                                    <h3></h3>
+                                    <p></p>
                                 </div>
                             </div>
                         </div>
@@ -306,15 +299,21 @@
             </h2>
             <div class="about-content">
                 <div class="about-text">
+                    <!-- Dynamic Content will be injected here by script.js -->
                     <p>
-                        Hello! I’m Ann Fritz De Luna, an enthusiastic Information Technology student who enjoys turning creative ideas into polished and user-friendly web experiences.
+                        Hello! I’m Ann Fritz De Luna, a passionate and driven Information Technology 
+                        student who enjoys turning creative ideas into functional and 
+                        visually appealing web experiences.
                     </p>
                     <p>
-                        I focus on collaboration, adaptability, and accountability while working in both individual and team settings. As a student leader and active member of campus organizations, I’ve strengthened my leadership and technical skills while balancing academics and extracurriculars.
+                        I value effective communication, adaptability, and accountability, which help me 
+                        collaborate well in both individual and team settings. As a student leader 
+                        and active member of various organizations, I’ve honed my 
+                        leadership and technical skills while balancing academics and extracurriculars.
                     </p>
                     <p>Here are a few technologies I've been working with recently:</p>
                     <ul class="skills-list">
-                        <li>JavaScript</li>
+                        <li>JavaScript </li>
                         <li>Java</li>
                         <li>Node.js</li>
                         <li>TypeScript</li>
@@ -323,9 +322,7 @@
                     </ul>
                 </div>
                 <div class="about-image">
-                    <div class="image-wrapper">
-                        <img src="wme.jpeg" alt="Ann Fritz portrait" loading="lazy">
-                    </div>
+                    <div class="image-wrapper"></div>
                 </div>
             </div>
         </div>
@@ -355,26 +352,6 @@
                             <li>Administered by: La Consolacion University Philippines</li>
                             <li>Language: English</li>
                             <li>Passed</li>
-                        </ul>
-                    </div>
-                    <div class="tab-content" id="job2">
-                        <h3>Google <span class="company">Digital Garage</span></h3>
-                        <p class="job-date">September 04, 2024</p>
-                        <ul class="job-description">
-                            <li>Fundamentals of digital marketing</li>
-                            <li>Administered by: Google</li>
-                            <li>Language: English</li>
-                            <li>Certified</li>
-                        </ul>
-                    </div>
-                    <div class="tab-content" id="job3">
-                        <h3>Meta <span class="company">Front-End</span></h3>
-                        <p class="job-date">January 20, 2025</p>
-                        <ul class="job-description">
-                            <li>Front-End Developer Professional Certificate</li>
-                            <li>Administered by: Meta</li>
-                            <li>Language: English</li>
-                            <li>Completed</li>
                         </ul>
                     </div>
                 </div>
@@ -475,7 +452,6 @@
                         <button type="submit" class="contact-submit-button">
                             Send Message
                         </button>
-                        <p id="contact-status" class="contact-status"></p>
                     </form>
                 </div>
             </div>
@@ -658,28 +634,6 @@
                 memeTrigger.addEventListener('click', (e) => { e.stopPropagation(); toggleMeme(); });
                 closeMeme.addEventListener('click', (e) => { e.stopPropagation(); toggleMeme(); });
                 nextMeme.addEventListener('click', (e) => { e.stopPropagation(); fetchMeme(); });
-            }
-
-            const contactForm = document.getElementById('contactForm');
-            const contactStatus = document.getElementById('contact-status');
-            if(contactForm && contactStatus) {
-                contactForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    contactStatus.textContent = 'Sending message...';
-
-                    const formData = new FormData(contactForm);
-                    const name = formData.get('name')?.toString().trim();
-                    const email = formData.get('email')?.toString().trim();
-                    const message = formData.get('message')?.toString().trim();
-
-                    if (!name || !email || !message) {
-                        contactStatus.textContent = 'Please fill out all fields before sending.';
-                        return;
-                    }
-
-                    contactStatus.textContent = 'Message received! Thank you.';
-                    contactForm.reset();
-                });
             }
         });
     </script>
