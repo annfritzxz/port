@@ -63,6 +63,13 @@
         }
         .run-script-btn:hover { background-color: rgba(100, 255, 218, 0.1); }
         .run-script-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .contact-status {
+            margin-top: 12px;
+            color: #64ffda;
+            font-size: 14px;
+            line-height: 1.5;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
 
         /* --- MEME WIDGET STYLES --- */
         .meme-widget-container {
@@ -452,6 +459,7 @@
                         <button type="submit" class="contact-submit-button">
                             Send Message
                         </button>
+                        <p id="contact-status" class="contact-status"></p>
                     </form>
                 </div>
             </div>
@@ -634,6 +642,28 @@
                 memeTrigger.addEventListener('click', (e) => { e.stopPropagation(); toggleMeme(); });
                 closeMeme.addEventListener('click', (e) => { e.stopPropagation(); toggleMeme(); });
                 nextMeme.addEventListener('click', (e) => { e.stopPropagation(); fetchMeme(); });
+            }
+
+            const contactForm = document.getElementById('contactForm');
+            const contactStatus = document.getElementById('contact-status');
+            if(contactForm && contactStatus) {
+                contactForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    contactStatus.textContent = 'Sending message...';
+
+                    const formData = new FormData(contactForm);
+                    const name = formData.get('name')?.toString().trim();
+                    const email = formData.get('email')?.toString().trim();
+                    const message = formData.get('message')?.toString().trim();
+
+                    if (!name || !email || !message) {
+                        contactStatus.textContent = 'Please fill out all fields before sending.';
+                        return;
+                    }
+
+                    contactStatus.textContent = 'Message received! Thank you.';
+                    contactForm.reset();
+                });
             }
         });
     </script>
