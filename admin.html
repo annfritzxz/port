@@ -380,7 +380,7 @@
                 <div style="margin-top:0.5rem;">
                     <label style="font-size:0.8rem; color:var(--slate); display:block; margin-bottom:0.25rem">Remote Sync URL (optional)</label>
                     <input id="remote-url" placeholder="https://your-server.example/api/data" style="width:100%; padding:0.5rem; border-radius:6px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:var(--white);">
-                    <p style="font-size:0.75rem; color:var(--slate); margin-top:0.5rem;">If this URL is set, data will auto-load at login and auto-push when changes are saved.</p>
+                    <p style="font-size:0.75rem; color:var(--slate); margin-top:0.5rem;">If this URL is set, data will auto-load at login, auto-push on save, and refresh every 30 seconds when open. Enter the same URL on every device to share edits.</p>
                     <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
                         <button class="btn-view-site" onclick="pushRemote()">Push Remote</button>
                         <button class="btn-view-site" onclick="pullRemote()">Pull Remote</button>
@@ -740,9 +740,11 @@
                 })
                 .finally(() => {
                     renderAll();
+                    setupRemoteSync();
                 });
             } else {
                 renderAll();
+                setupRemoteSync();
             }
         }
 
@@ -756,10 +758,52 @@
             return url;
         }
 
+        function setupRemoteSync() {
+            const url = document.getElementById('remote-url').value.trim();
+            if (!url) {
+                if (remoteSyncInterval) {
+                    clearInterval(remoteSyncInterval);
+                    remoteSyncInterval = null;
+                }
+                return;
+            }
+
+            if (remoteSyncInterval) {
+                clearInterval(remoteSyncInterval);
+            }
+
+            remoteSyncInterval = setInterval(() => {
+                fetch(url, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Server returned ' + response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && typeof data === 'object') {
+                        const currentData = localStorage.getItem(STORAGE_KEY);
+                        const incomingData = JSON.stringify(data);
+                        if (currentData !== incomingData) {
+                            db = data;
+                            localStorage.setItem(STORAGE_KEY, incomingData);
+                            renderAll();
+                        }
+                    } else {
+                        throw new Error('Invalid remote response format');
+                    }
+                })
+                .catch(err => {
+                    console.warn('Periodic remote sync failed:', err);
+                });
+            }, 30000);
+        }
+
         function postRemoteData() {
             const url = getRemoteURL();
-            if (!url) return;
-            fetch(url, {
+            if (!url) return Promise.resolve();
+            return fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(db)
@@ -777,12 +821,20 @@
         }
 
         function saveDB(syncRemote = false) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+            const dbString = JSON.stringify(db);
+            localStorage.setItem(STORAGE_KEY, dbString);
+
             if (syncRemote) {
-                postRemoteData();
+                postRemoteData().finally(() => {
+                    window.dispatchEvent(new Event('storage'));
+                    setupRemoteSync();
+                    renderAll();
+                });
+            } else {
+                window.dispatchEvent(new Event('storage'));
+                setupRemoteSync();
+                renderAll();
             }
-            window.dispatchEvent(new Event('storage'));
-            initCMS();
         }
 
         function pushRemote() {

@@ -7,24 +7,15 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 
 // Real-time subscription helper
 export const subscribeToTable = (tableName, callback) => {
-  return supabase
-    .channel(`public:${tableName}`)
-    .on(
-      'postgres_changes',
-      { event: 'INSERT', schema: 'public', table: tableName },
-      (payload) => callback(payload)
-    )
-    .on(
-      'postgres_changes',
-      { event: 'UPDATE', schema: 'public', table: tableName },
-      (payload) => callback(payload)
-    )
-    .on(
-      'postgres_changes',
-      { event: 'DELETE', schema: 'public', table: tableName },
-      (payload) => callback(payload)
-    )
-    .subscribe()
+  const channel = supabase.channel(`public:${tableName}`)
+
+  channel.on(
+    'postgres_changes',
+    { event: '*', schema: 'public', table: tableName },
+    (payload) => callback(payload)
+  )
+
+  return channel.subscribe()
 }
 
 export const unsubscribeFromTable = (subscription) => {
