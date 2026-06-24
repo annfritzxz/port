@@ -351,7 +351,7 @@
                 (Use 'admin' / 'admin' for UI demo)
             </p>
             <p style="margin-top: 0.5rem; font-size: 0.75rem; color: #ffb703;">
-                Note: Admin changes are stored locally in this browser by default. To make edits visible on other devices, enter a shared Remote Sync URL below and push or pull data from that server.
+                Note: Admin changes are stored locally in this browser by default. To make edits visible on other devices, enter the same shared Remote Sync URL on each device and use Push / Pull to synchronize data.
             </p>
         </div>
     </div>
@@ -380,6 +380,7 @@
                 <div style="margin-top:0.5rem;">
                     <label style="font-size:0.8rem; color:var(--slate); display:block; margin-bottom:0.25rem">Remote Sync URL (optional)</label>
                     <input id="remote-url" placeholder="https://your-server.example/api/data" style="width:100%; padding:0.5rem; border-radius:6px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:var(--white);">
+                    <p style="font-size:0.75rem; color:var(--slate); margin-top:0.5rem;">If this URL is set, data will auto-load at login and auto-push when changes are saved.</p>
                     <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
                         <button class="btn-view-site" onclick="pushRemote()">Push Remote</button>
                         <button class="btn-view-site" onclick="pullRemote()">Pull Remote</button>
@@ -688,18 +689,7 @@
         }
 
         
-        function initCMS() {
-            // Load from Storage
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                db = JSON.parse(stored);
-            } else {
-                
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-            }
-
-            document.getElementById('current-date').innerText = new Date().toDateString();
-            
+        function renderAll() {
             renderDashboard();
             renderAbout();
             renderProjects();
@@ -708,8 +698,62 @@
             renderAchievements();
         }
 
+        function loadRemoteURL() {
+            const savedURL = localStorage.getItem('remote_sync_url');
+            if (savedURL) {
+                document.getElementById('remote-url').value = savedURL;
+            }
+        }
+
+        function initCMS() {
+            loadRemoteURL();
+
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                db = JSON.parse(stored);
+            } else {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+            }
+
+            document.getElementById('current-date').innerText = new Date().toDateString();
+
+            const remoteURL = getRemoteURL();
+            if (remoteURL) {
+                fetch(remoteURL, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Server returned ' + response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && typeof data === 'object') {
+                        db = data;
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+                    } else {
+                        throw new Error('Invalid remote response format');
+                    }
+                })
+                .catch(err => {
+                    console.warn('Remote load failed:', err);
+                })
+                .finally(() => {
+                    renderAll();
+                });
+            } else {
+                renderAll();
+            }
+        }
+
         function getRemoteURL() {
-            return document.getElementById('remote-url').value.trim();
+            const url = document.getElementById('remote-url').value.trim();
+            if (url) {
+                localStorage.setItem('remote_sync_url', url);
+            } else {
+                localStorage.removeItem('remote_sync_url');
+            }
+            return url;
         }
 
         function postRemoteData() {
