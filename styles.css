@@ -429,6 +429,59 @@ body {
     gap: 100px;
 }
 
+.project-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 2rem;
+    background-color: var(--light-navy);
+    border: 1px solid var(--lightest-navy);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.project-card.expense-tracker {
+    min-height: 340px;
+    background-image: url("expense.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.project-card.expense-tracker::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10, 25, 47, 0.15) 0%, rgba(10, 25, 47, 0.95) 100%);
+    pointer-events: none;
+}
+
+.project-card.expense-tracker .project-card-content {
+    position: relative;
+    z-index: 1;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 340px;
+}
+
+.project-card.expense-tracker .project-card-title {
+    color: var(--lightest-slate);
+    font-size: clamp(1.75rem, 3vw, 2.4rem);
+    margin: 0 0 0.75rem;
+    font-weight: 700;
+}
+
+.project-card.expense-tracker .project-card-meta {
+    color: var(--green);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin: 0;
+}
+
 /* Achievements */
 .achievements-grid,
 .achievements-spotlight-grid {
