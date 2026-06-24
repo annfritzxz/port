@@ -351,7 +351,7 @@
                 (Use 'admin' / 'admin' for UI demo)
             </p>
             <p style="margin-top: 0.5rem; font-size: 0.75rem; color: #ffb703;">
-                Note: Admin changes are stored locally in this browser. They will not appear on other devices or browsers.
+                Note: Admin changes are stored locally in this browser. They will not appear on other devices or browsers unless you export and import the data.
             </p>
         </div>
     </div>
@@ -374,6 +374,9 @@
             <div class="action-container">
                 <a href="index.html" target="_blank" class="btn-view-site">View Website ↗</a>
                 <a href="https://github.com/" target="_blank" class="btn-view-site">GitHub ↗</a>
+                <button type="button" class="btn-view-site" onclick="exportData()">Export Data</button>
+                <label for="import-json" class="btn-view-site" style="margin: 0; cursor: pointer;">Import Data</label>
+                <input type="file" id="import-json" accept="application/json" style="display:none" onchange="importData(event)">
                 <button class="btn-logout" onclick="logout()">Terminate Session</button>
             </div>
         </nav>
@@ -879,7 +882,40 @@
             document.querySelectorAll('.edit-form-container').forEach(f => f.style.display = 'none');
         }
 
-        
+        function exportData() {
+            const dataStr = JSON.stringify(db, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'ann_portfolio_data.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const imported = JSON.parse(reader.result);
+                    if (imported && typeof imported === 'object') {
+                        db = imported;
+                        saveDB();
+                        alert('Data imported successfully. Changes will appear after reload.');
+                    } else {
+                        throw new Error('Invalid file format');
+                    }
+                } catch (err) {
+                    alert('Import failed. Please select a valid JSON export file.');
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
 
     </script>
 </body>
