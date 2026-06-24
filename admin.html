@@ -350,6 +350,9 @@
             <p style="margin-top: 1rem; font-size: 0.8rem; color: var(--slate);">
                 (Use 'admin' / 'admin' for UI demo)
             </p>
+            <p style="margin-top: 0.5rem; font-size: 0.75rem; color: #ffb703;">
+                Note: Admin changes are stored locally in this browser. They will not appear on other devices or browsers.
+            </p>
         </div>
     </div>
 
@@ -633,6 +636,12 @@
         const loginScreen = document.getElementById('login-screen');
         const adminPanel = document.getElementById('admin-panel');
         const loginForm = document.getElementById('login-form');
+
+        window.addEventListener('storage', () => {
+            if (adminPanel.style.display !== 'none') {
+                initCMS();
+            }
+        });
 
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
