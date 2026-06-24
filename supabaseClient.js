@@ -15,12 +15,13 @@ export const subscribeToTable = (tableName, callback) => {
     (payload) => callback(payload)
   )
 
-  return channel.subscribe()
+  channel.subscribe()
+  return channel
 }
 
 export const unsubscribeFromTable = (subscription) => {
   if (subscription) {
-    supabase.removeChannel(subscription)
+    subscription.unsubscribe()
   }
 }
 
