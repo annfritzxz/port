@@ -351,7 +351,7 @@
                 (Use 'admin' / 'admin' for UI demo)
             </p>
             <p style="margin-top: 0.5rem; font-size: 0.75rem; color: #ffb703;">
-                Note: Admin changes are stored locally in this browser. They will not appear on other devices or browsers unless you export and import the data or use the Remote Sync feature below.
+                Note: Admin changes are stored locally in this browser by default. To make edits visible on other devices, enter a shared Remote Sync URL below and push or pull data from that server.
             </p>
         </div>
     </div>
@@ -708,11 +708,85 @@
             renderAchievements();
         }
 
-        function saveDB() {
+        function getRemoteURL() {
+            return document.getElementById('remote-url').value.trim();
+        }
+
+        function postRemoteData() {
+            const url = getRemoteURL();
+            if (!url) return;
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(db)
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Server returned ' + response.status);
+                return response.text();
+            })
+            .then(() => {
+                console.log('Remote sync successful.');
+            })
+            .catch(err => {
+                console.warn('Remote sync failed:', err);
+            });
+        }
+
+        function saveDB(syncRemote = false) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-            
+            if (syncRemote) {
+                postRemoteData();
+            }
             window.dispatchEvent(new Event('storage'));
-            initCMS(); 
+            initCMS();
+        }
+
+        function pushRemote() {
+            const url = getRemoteURL();
+            if (!url) {
+                alert('Please enter a Remote Sync URL first.');
+                return;
+            }
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(db)
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Server returned ' + response.status);
+                alert('Data pushed to remote server successfully.');
+            })
+            .catch(err => {
+                alert('Remote push failed: ' + err.message);
+            });
+        }
+
+        function pullRemote() {
+            const url = getRemoteURL();
+            if (!url) {
+                alert('Please enter a Remote Sync URL first.');
+                return;
+            }
+            fetch(url, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Server returned ' + response.status);
+                return response.json();
+            })
+            .then(data => {
+                if (data && typeof data === 'object') {
+                    db = data;
+                    saveDB(false);
+                    alert('Data pulled from remote server successfully.');
+                } else {
+                    throw new Error('Invalid response format.');
+                }
+            })
+            .catch(err => {
+                alert('Remote pull failed: ' + err.message);
+            });
         }
 
         function renderDashboard() {
@@ -732,7 +806,7 @@
             db.about.bio1 = document.getElementById('bio-1').value;
             db.about.bio2 = document.getElementById('bio-2').value;
             db.about.skills = document.getElementById('skills-input').value.split(',').map(s => s.trim()).filter(s => s);
-            saveDB();
+            saveDB(true);
             alert("About section updated!");
         }
 
@@ -768,7 +842,7 @@
             if(title) {
                 db.projects.push({ id: Date.now(), title, tech, img });
                 hideForms();
-                saveDB();
+                saveDB(true);
                 document.getElementById('proj-title').value = '';
                 document.getElementById('proj-tech').value = '';
                 document.getElementById('proj-img').value = '';
@@ -806,7 +880,7 @@
                 const items = itemsStr.split(',').map(s => s.trim()).filter(s => s);
                 db.certificates.push({ id: "cert_" + Date.now(), title, company, date, items });
                 hideForms();
-                saveDB();
+                saveDB(true);
                 document.getElementById('cert-title').value = '';
                 document.getElementById('cert-company').value = '';
                 document.getElementById('cert-date').value = '';
@@ -842,7 +916,7 @@
             if(title) {
                 db.achievements.push({ id: Date.now(), title, year, desc });
                 hideForms();
-                saveDB();
+                saveDB(true);
                 document.getElementById('achieve-title').value = '';
                 document.getElementById('achieve-year').value = '';
                 document.getElementById('achieve-desc').value = '';
@@ -875,7 +949,7 @@
                 if(type === 'achieve') db.achievements = db.achievements.filter(a => a.id !== id);
                 if(type === 'msg') db.messages = db.messages.filter(m => m.id !== id);
                 
-                saveDB();
+                saveDB(true);
             }
         }
 
@@ -912,7 +986,7 @@
                     const imported = JSON.parse(reader.result);
                     if (imported && typeof imported === 'object') {
                         db = imported;
-                        saveDB();
+                        saveDB(true);
                         alert('Data imported successfully. Changes will appear after reload.');
                     } else {
                         throw new Error('Invalid file format');
