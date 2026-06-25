@@ -14,9 +14,6 @@ const defaultData = {
         skills: ["JavaScript", "Java", "Node.js", "TypeScript", "HTML & CSS", "Python"]
     },
     certificates: [
-        { id: "job1", title: "Microsoft", company: "Excel", date: "May 16, 2023", items: ["Microsoft Excel (Office 2019)", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] },
-        { id: "job2", title: "Microsoft", company: "Access", date: "May 12, 2025", items: ["Microsoft Access Expert (Office 2019)", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] },
-        { id: "job3", title: "Microsoft", company: "Word", date: "May 22, 2022", items: ["Microsoft Word Expert (Office 2019)", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] },
         { id: "job4", title: "Cisco ", company: "Cybersecurity", date: "December 6, 2025", items: ["Cisco Cybersecurity", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] },
         { id: "job5", title: "Device ", company: "Configuration ", date: "December 16, 2025", items: ["Device Configuration Management", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] }
     ],
@@ -281,10 +278,13 @@ const renderDynamicContent = () => {
     const certContentContainer = document.querySelector('.certificate-content');
     
     if (certTabsContainer && certContentContainer && data.certificates) {
+        const visibleCertificateIds = new Set(["job4", "job5"]);
+        const visibleCertificates = data.certificates.filter((cert) => visibleCertificateIds.has(String(cert.id)));
+
         let tabsHtml = '';
         let contentHtml = '';
         
-        data.certificates.forEach((cert, index) => {
+        visibleCertificates.forEach((cert, index) => {
             const isActive = index === 0 ? 'active' : '';
             tabsHtml += `<button class="tab-button ${isActive}" data-tab="${cert.id}">${cert.title}</button>`;
             
@@ -306,7 +306,6 @@ const renderDynamicContent = () => {
         
         certTabsContainer.innerHTML = tabsHtml;
         certContentContainer.innerHTML = contentHtml;
-        
         
         const tabButtons = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
