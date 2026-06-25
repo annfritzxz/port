@@ -16,7 +16,9 @@ const defaultData = {
     certificates: [
         { id: "job1", title: "Microsoft", company: "Excel", date: "May 16, 2023", items: ["Microsoft Excel (Office 2019)", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] },
         { id: "job2", title: "Microsoft", company: "Access", date: "May 12, 2025", items: ["Microsoft Access Expert (Office 2019)", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] },
-        { id: "job3", title: "Microsoft", company: "Word", date: "May 22, 2022", items: ["Microsoft Word Expert (Office 2019)", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] }
+        { id: "job3", title: "Microsoft", company: "Word", date: "May 22, 2022", items: ["Microsoft Word Expert (Office 2019)", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] },
+        { id: "job4", title: "Cisco ", company: "Cybersecurity", date: "December 6, 2025", items: ["Cisco Cybersecurity", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] },
+        { id: "job5", title: "Device ", company: "Configuration ", date: "December 16, 2025", items: ["Device Configuration Management", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] }
     ],
     projects: [
         { id: 1, title: 'Job Hunting', tech: 'Job • Hunting • Website', img: 'woww.png' },
