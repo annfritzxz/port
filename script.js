@@ -17,8 +17,8 @@ const defaultData = {
         { id: "job1", title: "Microsoft", company: "Excel", date: "May 16, 2023", items: ["Microsoft Excel (Office 2019)", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] },
         { id: "job2", title: "Microsoft", company: "Access", date: "May 12, 2025", items: ["Microsoft Access Expert (Office 2019)", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] },
         { id: "job3", title: "Microsoft", company: "Word", date: "May 22, 2022", items: ["Microsoft Word Expert (Office 2019)", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] },
-        { id: "job4", title: "Cisco ", company: "Cybersecurity", date: "December 6, 2025", items: ["Cisco Cybersecurity", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] },
-        { id: "job5", title: "Device ", company: "Device Configuration ", date: "December 16, 2025", items: ["Device Configuration Management", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] }
+        { id: "job4", title: "Cisco", company: "Cybersecurity", date: "December 6, 2025", items: ["Cisco Cybersecurity", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] },
+        { id: "job5", title: "Device", company: "Device Configuration ", date: "December 16, 2025", items: ["Device Configuration Management", "Administered by: La Consolacion University Philippines", "Language: English", "Passed"] }
     ],
     projects: [
         { id: 1, title: 'Job Hunting', tech: 'Job • Hunting • Website', img: 'woww.png' },
@@ -36,7 +36,8 @@ const defaultData = {
         { id: 2, title: 'With Honors', desc: "Senior HighSchool With Honors at Saint Anne's Catholic School.", year: '2022' },
         { id: 3, title: "Dean's Lister", desc: "First Year Dean's Lister Awardee at La Consolacion University Philippines.", year: '2023' },
         { id: 4, title: "Dean's Lister", desc: "Second Year Dean's Lister Awardee at La Consolacion University Philippines.", year: '2024' },
-        { id: 5, title: "Dean' Lister", desc: "Third Year Dean's Lister Awardee at La Consolacion University Philippines.", year: '2025' }
+        { id: 5, title: "Dean' Lister", desc: "Third Year Dean's Lister Awardee at La Consolacion University Philippines.", year: '2025' },
+        { id: 6, title: "Cum Laude", desc: "Graduated Cum Laude at La Consolacion University Philippines.", year: '2026' }
     ],
     messages: [],
     lastUpdated: 0
