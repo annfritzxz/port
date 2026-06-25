@@ -91,6 +91,63 @@ const updatePortfolioData = (updatedData) => {
     renderDynamicContent();
 };
 
+// Listen for storage changes (syncs across tabs/windows of the same browser)
+window.addEventListener('storage', (e) => {
+    if (e.key === STORAGE_KEY) {
+        try {
+            renderDynamicContent();
+        } catch (err) {
+            // ignore
+        }
+    }
+});
+
+// Export current portfolio data as a downloadable JSON file
+const exportPortfolio = (filename = 'portfolio_export.json') => {
+    const data = localStorage.getItem(STORAGE_KEY) || JSON.stringify(defaultData);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+};
+
+// Import portfolio data from a File object (JSON). Replaces local data and renders.
+const importPortfolioFromFile = async (file) => {
+    if (!file) return;
+    try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        const merged = mergePortfolioData(parsed, defaultData);
+        updatePortfolioData(merged);
+        return true;
+    } catch (err) {
+        console.error('Import failed', err);
+        return false;
+    }
+};
+
+// Create a shareable JSON string and copy to clipboard (useful to paste on another device)
+const copyPortfolioToClipboard = async () => {
+    try {
+        const data = localStorage.getItem(STORAGE_KEY) || JSON.stringify(defaultData);
+        await navigator.clipboard.writeText(data);
+        return true;
+    } catch (err) {
+        console.error('Copy failed', err);
+        return false;
+    }
+};
+
+// Allow these utilities to be called from the console or other scripts
+window.exportPortfolio = exportPortfolio;
+window.importPortfolioFromFile = importPortfolioFromFile;
+window.copyPortfolioToClipboard = copyPortfolioToClipboard;
+
 const renderDynamicContent = () => {
     const data = getPortfolioData();
 
