@@ -47,13 +47,14 @@ const mergeArraysById = (savedArray, defaultArray) => {
     const savedById = new Map();
     savedArray.forEach((item) => {
         if (item && item.id !== undefined) {
-            savedById.set(item.id, item);
+            // normalize id to string to avoid mismatches between number and string ids
+            savedById.set(String(item.id), item);
         }
     });
 
     const merged = savedArray.slice();
     defaultArray.forEach((defaultItem) => {
-        if (defaultItem && defaultItem.id !== undefined && !savedById.has(defaultItem.id)) {
+        if (defaultItem && defaultItem.id !== undefined && !savedById.has(String(defaultItem.id))) {
             merged.push(defaultItem);
         }
     });
@@ -107,7 +108,16 @@ const fetchRemotePortfolioData = async () => {
         });
         if (!response.ok) throw new Error(`Remote fetch failed: ${response.status}`);
         const remoteData = await response.json();
-        return mergePortfolioData(remoteData, defaultData);
+        // merge remote with local and defaults, then persist locally so other devices see updates
+        const localRaw = localStorage.getItem(STORAGE_KEY);
+        const localData = localRaw ? JSON.parse(localRaw) : null;
+        const mergedRemote = mergePortfolioData(remoteData, defaultData);
+        // merge mergedRemote with any local changes to avoid overwriting newer local edits
+        const finalMerged = mergePortfolioData(localData || mergedRemote, mergedRemote);
+        if (JSON.stringify(finalMerged) !== localRaw) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(finalMerged));
+        }
+        return finalMerged;
     } catch (err) {
         console.warn('Remote portfolio fetch failed:', err);
         return null;
