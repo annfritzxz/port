@@ -2,10 +2,30 @@
 
 const STORAGE_KEY = 'ann_portfolio_db_v2';
 
-const REMOTE_SYNC_URL = ''; // Set your remote API endpoint here, e.g. Firebase, custom backend or hosted JSON store
-const REMOTE_SYNC_ENABLED = Boolean(REMOTE_SYNC_URL);
+const DEFAULT_REMOTE_SYNC_URL = ''; // Set your remote API endpoint here, e.g. Firebase, custom backend or hosted JSON store
+const REMOTE_SYNC_CONFIG_STORAGE_KEY = 'ann_portfolio_remote_sync_url';
 const REMOTE_SYNC_POLL_MS = 15000;
 const REMOTE_SYNC_HEADERS = { 'Content-Type': 'application/json' };
+
+const getRemoteSyncUrl = () => {
+    const queryUrl = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('remoteSyncUrl') : null;
+    const storedUrl = typeof window !== 'undefined' ? localStorage.getItem(REMOTE_SYNC_CONFIG_STORAGE_KEY) : null;
+    return String(queryUrl || storedUrl || DEFAULT_REMOTE_SYNC_URL || '').trim();
+};
+
+const isRemoteSyncEnabled = () => Boolean(getRemoteSyncUrl());
+
+window.setPortfolioRemoteSyncUrl = (url) => {
+    if (typeof window === 'undefined' || !url) return false;
+    localStorage.setItem(REMOTE_SYNC_CONFIG_STORAGE_KEY, String(url).trim());
+    return true;
+};
+
+window.clearPortfolioRemoteSyncUrl = () => {
+    if (typeof window === 'undefined') return false;
+    localStorage.removeItem(REMOTE_SYNC_CONFIG_STORAGE_KEY);
+    return true;
+};
 
 const defaultData = {
     about: {
@@ -102,9 +122,11 @@ const getPortfolioData = () => {
 };
 
 const fetchRemotePortfolioData = async () => {
-    if (!REMOTE_SYNC_ENABLED) return null;
+    if (!isRemoteSyncEnabled()) return null;
+    const remoteUrl = getRemoteSyncUrl();
+    if (!remoteUrl) return null;
     try {
-        const response = await fetch(REMOTE_SYNC_URL, {
+        const response = await fetch(remoteUrl, {
             method: 'GET',
             headers: REMOTE_SYNC_HEADERS,
             cache: 'no-store',
@@ -128,13 +150,15 @@ const fetchRemotePortfolioData = async () => {
 };
 
 const pushPortfolioDataRemote = async (data) => {
-    if (!REMOTE_SYNC_ENABLED) return false;
+    if (!isRemoteSyncEnabled()) return false;
+    const remoteUrl = getRemoteSyncUrl();
+    if (!remoteUrl) return false;
     try {
         const payload = {
             ...data,
             lastUpdated: Number(data.lastUpdated) || Date.now(),
         };
-        const response = await fetch(REMOTE_SYNC_URL, {
+        const response = await fetch(remoteUrl, {
             method: 'PUT',
             headers: REMOTE_SYNC_HEADERS,
             body: JSON.stringify(payload),
@@ -172,7 +196,7 @@ const syncRemoteToLocal = async () => {
 };
 
 const startRemoteSyncPoll = () => {
-    if (!REMOTE_SYNC_ENABLED || remoteSyncIntervalId) return;
+    if (!isRemoteSyncEnabled() || remoteSyncIntervalId) return;
     remoteSyncIntervalId = setInterval(async () => {
         const remoteData = await fetchRemotePortfolioData();
         if (!remoteData) return;
@@ -196,7 +220,7 @@ const updatePortfolioData = (updatedData) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(mergedData));
     renderDynamicContent();
 
-    if (REMOTE_SYNC_ENABLED) {
+    if (isRemoteSyncEnabled()) {
         pushPortfolioDataRemote(mergedData).catch(() => {});
     }
 };
@@ -1077,7 +1101,7 @@ window.addEventListener('storage', (e) => {
 
 
 async function initAll() {
-    if (REMOTE_SYNC_ENABLED) {
+    if (isRemoteSyncEnabled()) {
         await syncRemoteToLocal();
         startRemoteSyncPoll();
         window.addEventListener('online', syncRemoteToLocal);
