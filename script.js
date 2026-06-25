@@ -2,6 +2,11 @@
 
 const STORAGE_KEY = 'ann_portfolio_db_v2';
 
+const REMOTE_SYNC_URL = ''; // Set your remote API endpoint here, e.g. Firebase, custom backend or hosted JSON store
+const REMOTE_SYNC_ENABLED = Boolean(REMOTE_SYNC_URL);
+const REMOTE_SYNC_POLL_MS = 15000;
+const REMOTE_SYNC_HEADERS = { 'Content-Type': 'application/json' };
+
 const defaultData = {
     about: {
         bio1: "Hello! I’m Ann Fritz De Luna, a passionate and driven Information Technology student who enjoys turning creative ideas into functional and visually appealing web experiences.",
@@ -31,7 +36,8 @@ const defaultData = {
         { id: 4, title: "Dean's Lister", desc: "Second Year Dean's Lister Awardee at La Consolacion University Philippines.", year: '2024' },
         { id: 5, title: "Dean' Lister", desc: "Third Year Dean's Lister Awardee at La Consolacion University Philippines.", year: '2025' }
     ],
-    messages: []
+    messages: [],
+    lastUpdated: 0
 };
 
 const mergeArraysById = (savedArray, defaultArray) => {
@@ -57,7 +63,12 @@ const mergeArraysById = (savedArray, defaultArray) => {
 const mergePortfolioData = (savedData, defaultData) => {
     if (!savedData || typeof savedData !== 'object') return defaultData;
 
+    const savedLastUpdated = Number(savedData?.lastUpdated) || 0;
+    const defaultLastUpdated = Number(defaultData?.lastUpdated) || 0;
+    const lastUpdated = Math.max(savedLastUpdated, defaultLastUpdated);
+
     return {
+        lastUpdated,
         about: {
             ...defaultData.about,
             ...(savedData.about || {}),
@@ -86,9 +97,95 @@ const getPortfolioData = () => {
     return mergedData;
 };
 
+const fetchRemotePortfolioData = async () => {
+    if (!REMOTE_SYNC_ENABLED) return null;
+    try {
+        const response = await fetch(REMOTE_SYNC_URL, {
+            method: 'GET',
+            headers: REMOTE_SYNC_HEADERS,
+            cache: 'no-store',
+        });
+        if (!response.ok) throw new Error(`Remote fetch failed: ${response.status}`);
+        const remoteData = await response.json();
+        return mergePortfolioData(remoteData, defaultData);
+    } catch (err) {
+        console.warn('Remote portfolio fetch failed:', err);
+        return null;
+    }
+};
+
+const pushPortfolioDataRemote = async (data) => {
+    if (!REMOTE_SYNC_ENABLED) return false;
+    try {
+        const payload = {
+            ...data,
+            lastUpdated: Number(data.lastUpdated) || Date.now(),
+        };
+        const response = await fetch(REMOTE_SYNC_URL, {
+            method: 'PUT',
+            headers: REMOTE_SYNC_HEADERS,
+            body: JSON.stringify(payload),
+        });
+        if (!response.ok) throw new Error(`Remote push failed: ${response.status}`);
+        return true;
+    } catch (err) {
+        console.warn('Remote portfolio push failed:', err);
+        return false;
+    }
+};
+
+let remoteSyncIntervalId = null;
+
+const syncRemoteToLocal = async () => {
+    if (!REMOTE_SYNC_ENABLED) return null;
+    const remoteData = await fetchRemotePortfolioData();
+    if (!remoteData) return null;
+
+    const localData = getPortfolioData();
+    const remoteUpdated = Number(remoteData.lastUpdated) || 0;
+    const localUpdated = Number(localData.lastUpdated) || 0;
+
+    if (remoteUpdated > localUpdated) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteData));
+        renderDynamicContent();
+        return remoteData;
+    }
+
+    if (localUpdated > remoteUpdated) {
+        pushPortfolioDataRemote(localData);
+    }
+
+    return localData;
+};
+
+const startRemoteSyncPoll = () => {
+    if (!REMOTE_SYNC_ENABLED || remoteSyncIntervalId) return;
+    remoteSyncIntervalId = setInterval(async () => {
+        const remoteData = await fetchRemotePortfolioData();
+        if (!remoteData) return;
+        const localData = getPortfolioData();
+        if (JSON.stringify(remoteData) !== JSON.stringify(localData)) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteData));
+            renderDynamicContent();
+        }
+    }, REMOTE_SYNC_POLL_MS);
+};
+
+const stopRemoteSyncPoll = () => {
+    if (!remoteSyncIntervalId) return;
+    clearInterval(remoteSyncIntervalId);
+    remoteSyncIntervalId = null;
+};
+
 const updatePortfolioData = (updatedData) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
+    const mergedData = mergePortfolioData(updatedData, defaultData);
+    mergedData.lastUpdated = Date.now();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(mergedData));
     renderDynamicContent();
+
+    if (REMOTE_SYNC_ENABLED) {
+        pushPortfolioDataRemote(mergedData).catch(() => {});
+    }
 };
 
 // Listen for storage changes (syncs across tabs/windows of the same browser)
@@ -966,7 +1063,13 @@ window.addEventListener('storage', (e) => {
 });
 
 
-function initAll() {
+async function initAll() {
+    if (REMOTE_SYNC_ENABLED) {
+        await syncRemoteToLocal();
+        startRemoteSyncPoll();
+        window.addEventListener('online', syncRemoteToLocal);
+    }
+
     // 1. Render content from "Database" (LocalStorage) first
     renderDynamicContent();
     
