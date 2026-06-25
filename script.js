@@ -19,7 +19,10 @@ const defaultData = {
         { id: 3, title: 'Hotel Reservation', tech: 'Html • JavaScript • CSS', img: 'whaha.png' },
         { id: 4, title: 'Make Cents', tech: 'Capstone • Project', img: 'wmake.png' },
         { id: 5, title: 'Skill Up', tech: 'Figma • Student • Teacher', img: 'wskill.png' },
-        { id: 6, title: 'Jumper', tech: 'GODOT • Game • Play', img: 'wgodot.png' }
+        { id: 6, title: 'Jumper', tech: 'GODOT • Game • Play', img: 'wgodot.png' },
+        { id: 7, title: 'Expense Tracker', tech: 'Expense • Tracker • Website', img: 'expense.png' },
+        { id: 8, title: 'Task Drive', tech: 'Task • Drive • Website', img: 'todo.png' }
+        
     ],
     achievements: [
         { id: 1, title: 'With Honors', desc: "Junior HighSchool With Honors at Saint Anne's Catholic School.", year: '2020' },
@@ -31,14 +34,56 @@ const defaultData = {
     messages: []
 };
 
+const mergeArraysById = (savedArray, defaultArray) => {
+    if (!Array.isArray(defaultArray)) return savedArray || [];
+    if (!Array.isArray(savedArray)) return defaultArray.slice();
+
+    const savedById = new Map();
+    savedArray.forEach((item) => {
+        if (item && item.id !== undefined) {
+            savedById.set(item.id, item);
+        }
+    });
+
+    const merged = savedArray.slice();
+    defaultArray.forEach((defaultItem) => {
+        if (defaultItem && defaultItem.id !== undefined && !savedById.has(defaultItem.id)) {
+            merged.push(defaultItem);
+        }
+    });
+    return merged;
+};
+
+const mergePortfolioData = (savedData, defaultData) => {
+    if (!savedData || typeof savedData !== 'object') return defaultData;
+
+    return {
+        about: {
+            ...defaultData.about,
+            ...(savedData.about || {}),
+        },
+        certificates: mergeArraysById(savedData.certificates, defaultData.certificates),
+        projects: mergeArraysById(savedData.projects, defaultData.projects),
+        achievements: mergeArraysById(savedData.achievements, defaultData.achievements),
+        messages: Array.isArray(savedData.messages) ? savedData.messages : [],
+    };
+};
+
 const getPortfolioData = () => {
     const data = localStorage.getItem(STORAGE_KEY);
     if (!data) {
-        
         localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData));
         return defaultData;
     }
-    return JSON.parse(data);
+
+    const parsedData = JSON.parse(data);
+    const mergedData = mergePortfolioData(parsedData, defaultData);
+
+    if (JSON.stringify(mergedData) !== JSON.stringify(parsedData)) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(mergedData));
+    }
+
+    return mergedData;
 };
 
 const updatePortfolioData = (updatedData) => {
